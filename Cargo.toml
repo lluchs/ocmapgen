@@ -1,0 +1,13 @@
+[package]
+name = "ocmapgen"
+version = "0.1.0"
+authors = ["Lukas Werling <lukas.werling@gmail.com>"]
+build = "build.rs"
+
+[dependencies]
+libc = "0.2"
+
+[build-dependencies]
+gcc = "0.3"
+cmake = "0.1"
+regex = "0.2"
