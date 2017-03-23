@@ -208,8 +208,8 @@ C4MapgenHandle* c4_mapgen_handle_new(const char* filename, const char* source, c
 			if(script_path == nullptr)
 				throw std::runtime_error("For algo=script overlays to work, save the file first at the location of the Script.c file");
 
-			gchar* dirname = g_path_get_dirname(script_path);
-			gchar* basename = g_path_get_basename(script_path);
+			char* dirname = g_path_get_dirname(script_path);
+			char* basename = g_path_get_basename(script_path);
 
 			C4Group File;
 			if(!File.Open(dirname))

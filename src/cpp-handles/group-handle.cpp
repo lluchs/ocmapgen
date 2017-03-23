@@ -32,31 +32,31 @@ void c4_group_handle_free(C4GroupHandle* handle)
   delete HANDLE_TO_GROUP(handle);
 }
 
-const gchar* c4_group_handle_get_error(C4GroupHandle* handle)
+const char* c4_group_handle_get_error(C4GroupHandle* handle)
 {
   return HANDLE_TO_GROUP(handle)->GetError();
 }
 
-gboolean c4_group_handle_open(C4GroupHandle* handle, const gchar* path, gboolean create)
+bool c4_group_handle_open(C4GroupHandle* handle, const char* path, bool create)
 {
   return HANDLE_TO_GROUP(handle)->Open(path, create);
 }
 
-gboolean c4_group_handle_open_as_child(C4GroupHandle* handle, C4GroupHandle* mother, const gchar* name, gboolean exclusive, gboolean create)
+bool c4_group_handle_open_as_child(C4GroupHandle* handle, C4GroupHandle* mother, const char* name, bool exclusive, bool create)
 {
   return HANDLE_TO_GROUP(handle)->OpenAsChild(HANDLE_TO_GROUP(mother),
                                               name, exclusive, create);
 }
 
-const gchar* c4_group_handle_get_name(C4GroupHandle* handle)
+const char* c4_group_handle_get_name(C4GroupHandle* handle)
 {
   return HANDLE_TO_GROUP(handle)->GetName();
 }
 
-gchar* c4_group_handle_get_full_name(C4GroupHandle* handle)
+char* c4_group_handle_get_full_name(C4GroupHandle* handle)
 {
   StdStrBuf buf(HANDLE_TO_GROUP(handle)->GetFullName());
-  gchar* res = static_cast<gchar*>(g_malloc(buf.getSize()*sizeof(gchar)));
+  char* res = static_cast<char*>(g_malloc(buf.getSize()*sizeof(char)));
   memcpy(res, buf.getData(), buf.getSize());
   return res;
 }
@@ -66,32 +66,32 @@ void c4_group_handle_reset_search(C4GroupHandle* handle)
   HANDLE_TO_GROUP(handle)->ResetSearch();
 }
 
-gboolean c4_group_handle_find_next_entry(C4GroupHandle* handle, const gchar* wildcard, gsize* size, gchar* filename, gboolean start_at_filename)
+bool c4_group_handle_find_next_entry(C4GroupHandle* handle, const char* wildcard, size_t* size, char* filename, bool start_at_filename)
 {
   return HANDLE_TO_GROUP(handle)->FindNextEntry(wildcard, filename, size, start_at_filename);
 }
 
-gboolean c4_group_handle_access_next_entry(C4GroupHandle* handle, const gchar* wildcard, gsize* size, gchar* filename, gboolean start_at_filename)
+bool c4_group_handle_access_next_entry(C4GroupHandle* handle, const char* wildcard, size_t* size, char* filename, bool start_at_filename)
 {
   return HANDLE_TO_GROUP(handle)->AccessNextEntry(wildcard, size, filename, start_at_filename);
 }
 
-gboolean c4_group_handle_access_entry(C4GroupHandle* handle, const gchar* wildcard, gsize* size, gchar* filename, gboolean needs_to_be_a_group)
+bool c4_group_handle_access_entry(C4GroupHandle* handle, const char* wildcard, size_t* size, char* filename, bool needs_to_be_a_group)
 {
   return HANDLE_TO_GROUP(handle)->AccessEntry(wildcard, size, filename, needs_to_be_a_group);
 }
 
-gsize c4_group_handle_accessed_entry_size(C4GroupHandle* handle)
+size_t c4_group_handle_accessed_entry_size(C4GroupHandle* handle)
 {
   return HANDLE_TO_GROUP(handle)->AccessedEntrySize();
 }
 
-gboolean c4_group_handle_read(C4GroupHandle* handle, gpointer buffer, gsize size)
+bool c4_group_handle_read(C4GroupHandle* handle, void* buffer, size_t size)
 {
   return HANDLE_TO_GROUP(handle)->Read(buffer, size);
 }
 
-gboolean c4_group_handle_is_folder(C4GroupHandle* handle)
+bool c4_group_handle_is_folder(C4GroupHandle* handle)
 {
 	C4Group *group = HANDLE_TO_GROUP(handle);
 	return group->IsOpen() && !group->IsPacked();

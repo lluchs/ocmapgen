@@ -47,7 +47,7 @@ void c4_material_map_handle_free(C4MaterialMapHandle* material_map)
   //delete HANDLE_TO_MATERIAL_MAP(material_map);
 }
 
-guint c4_material_map_handle_load(C4MaterialMapHandle* material_map, C4GroupHandle* group)
+unsigned int c4_material_map_handle_load(C4MaterialMapHandle* material_map, C4GroupHandle* group)
 {
   return HANDLE_TO_MATERIAL_MAP(material_map)->Load(*HANDLE_TO_GROUP(group));
 }
@@ -71,22 +71,22 @@ void c4_material_map_crossmap_materials(C4MaterialMapHandle* material_map, C4Tex
   }
 }
 
-guint c4_material_map_handle_get_num(C4MaterialMapHandle* material_map)
+unsigned int c4_material_map_handle_get_num(C4MaterialMapHandle* material_map)
 {
   return HANDLE_TO_MATERIAL_MAP(material_map)->Num;
 }
 
-C4MaterialHandle* c4_material_map_handle_get_material(C4MaterialMapHandle* material_map, guint index)
+C4MaterialHandle* c4_material_map_handle_get_material(C4MaterialMapHandle* material_map, unsigned int index)
 {
-  g_assert(index < (guint)(HANDLE_TO_MATERIAL_MAP(material_map)->Num));
+  g_assert(index < (unsigned int)(HANDLE_TO_MATERIAL_MAP(material_map)->Num));
   return MATERIAL_TO_HANDLE(&HANDLE_TO_MATERIAL_MAP(material_map)->Map[index]);
 }
 
-const gchar* c4_material_handle_get_name(C4MaterialHandle* material)
+const char* c4_material_handle_get_name(C4MaterialHandle* material)
 {
   return HANDLE_TO_MATERIAL(material)->Name;
 }
-const gchar* c4_material_handle_get_texture_overlay(C4MaterialHandle* material)
+const char* c4_material_handle_get_texture_overlay(C4MaterialHandle* material)
 {
   return HANDLE_TO_MATERIAL(material)->sTextureOverlay.getData();
 }

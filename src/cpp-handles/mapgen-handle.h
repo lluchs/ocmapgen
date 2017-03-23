@@ -16,12 +16,10 @@
 #ifndef INC_MAPE_C4_MAPGEN_HANDLE_H
 #define INC_MAPE_C4_MAPGEN_HANDLE_H
 
-#include <glib.h>
 
 #include "mape/cpp-handles/material-handle.h"
 #include "mape/cpp-handles/texture-handle.h"
 
-G_BEGIN_DECLS
 
 typedef struct _C4MapgenHandle C4MapgenHandle;
 
@@ -39,6 +37,5 @@ unsigned int c4_mapgen_handle_get_height(C4MapgenHandle* mapgen);
 unsigned int c4_mapgen_handle_get_rowstride(C4MapgenHandle* mapgen);
 const char* c4_mapgen_handle_get_error(C4MapgenHandle* mapgen);
 
-G_END_DECLS
 
 #endif /* INC_MAPE_C4_MAPGEN_HANDLE_H */

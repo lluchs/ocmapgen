@@ -42,42 +42,42 @@ void c4_texture_map_handle_free(C4TextureMapHandle* texture_map)
   //delete HANDLE_TO_TEXTURE_MAP(texture_map);
 }
 
-guint c4_texture_map_handle_load_map(C4TextureMapHandle* texture_map, C4GroupHandle* group, const char* entry_name, gboolean* overload_materials, gboolean* overload_textures)
+unsigned int c4_texture_map_handle_load_map(C4TextureMapHandle* texture_map, C4GroupHandle* group, const char* entry_name, bool* overload_materials, bool* overload_textures)
 {
   bool fOverloadMaterials = false;
   bool fOverloadTextures = false;
-  guint32 retval = HANDLE_TO_TEXTURE_MAP(texture_map)->LoadMap(*HANDLE_TO_GROUP(group), entry_name, &fOverloadMaterials, &fOverloadTextures);
+  unsigned int32 retval = HANDLE_TO_TEXTURE_MAP(texture_map)->LoadMap(*HANDLE_TO_GROUP(group), entry_name, &fOverloadMaterials, &fOverloadTextures);
   if(overload_materials) *overload_materials = fOverloadMaterials;
   if(overload_textures) *overload_textures = fOverloadTextures;
   return retval;
 }
 
-gboolean c4_texture_map_handle_add_texture(C4TextureMapHandle* texture_map, const char* texture, guint32 avg_color)
+bool c4_texture_map_handle_add_texture(C4TextureMapHandle* texture_map, const char* texture, unsigned int32 avg_color)
 {
-  gboolean result = HANDLE_TO_TEXTURE_MAP(texture_map)->AddTexture(texture, nullptr);
+  bool result = HANDLE_TO_TEXTURE_MAP(texture_map)->AddTexture(texture, nullptr);
   if(!result) return FALSE;
   HANDLE_TO_TEXTURE_MAP(texture_map)->GetTexture(texture)->SetAverageColor(avg_color);
   return TRUE;
 }
 
-const char* c4_texture_map_handle_get_texture(C4TextureMapHandle* texture_map, guint index)
+const char* c4_texture_map_handle_get_texture(C4TextureMapHandle* texture_map, unsigned int index)
 {
   return HANDLE_TO_TEXTURE_MAP(texture_map)->GetTexture(index);
 }
 
-guint32 c4_texture_handle_get_average_texture_color(C4TextureMapHandle* texture_map, const char* name)
+unsigned int32 c4_texture_handle_get_average_texture_color(C4TextureMapHandle* texture_map, const char* name)
 {
   return HANDLE_TO_TEXTURE_MAP(texture_map)->GetTexture(name)->GetAverageColor();
 }
 
-const char* c4_texture_handle_get_entry_material_name(C4TextureMapHandle* texture_map, guint index)
+const char* c4_texture_handle_get_entry_material_name(C4TextureMapHandle* texture_map, unsigned int index)
 {
   const C4TexMapEntry* entry = HANDLE_TO_TEXTURE_MAP(texture_map)->GetEntry(index);
   if(!entry) return nullptr;
   return entry->GetMaterialName();
 }
 
-const char* c4_texture_handle_get_entry_texture_name(C4TextureMapHandle* texture_map, guint index)
+const char* c4_texture_handle_get_entry_texture_name(C4TextureMapHandle* texture_map, unsigned int index)
 {
   const C4TexMapEntry* entry = HANDLE_TO_TEXTURE_MAP(texture_map)->GetEntry(index);
   if(!entry) return nullptr;
