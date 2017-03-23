@@ -2,12 +2,8 @@ extern crate cmake;
 extern crate gcc;
 extern crate regex;
 extern crate glob;
+extern crate bindgen;
 
-use std::collections::{HashMap, HashSet};
-use std::io;
-use std::io::prelude::*;
-use std::fs::File;
-use regex::Regex;
 use glob::glob;
 
 fn main() {
@@ -34,6 +30,14 @@ fn main() {
             cfg.file(f);
         }
     }
-
     cfg.compile("libcpphandles.a");
+
+    // Generate ffi Rust bindings fo the cpp-handles header files.
+    let bindings = bindgen::builder()
+        .header("src/cpp-handles/bindgen.h")
+        .whitelisted_function("c4_.+")
+        .raw_line("#![allow(dead_code)]")
+        .generate()
+        .unwrap();
+    bindings.write_to_file("src/ffi.rs").unwrap();
 }
