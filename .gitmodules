@@ -1,0 +1,3 @@
+[submodule "openclonk"]
+	path = openclonk
+	url = https://github.com/openclonk/openclonk
