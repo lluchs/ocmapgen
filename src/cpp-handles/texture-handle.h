@@ -17,8 +17,11 @@
 #define INC_MAPE_C4_TEXTURE_HANDLE_H
 
 
-#include "mape/cpp-handles/group-handle.h"
+#include "group-handle.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef struct _C4TextureMapHandle C4TextureMapHandle;
 
@@ -26,13 +29,16 @@ C4TextureMapHandle* c4_texture_map_handle_new(void);
 void c4_texture_map_handle_free(C4TextureMapHandle* texture_map);
 
 unsigned int c4_texture_map_handle_load_map(C4TextureMapHandle* texture_map, C4GroupHandle* group, const char* entry_name, bool* overload_materials, bool* overload_textures);
-bool c4_texture_map_handle_add_texture(C4TextureMapHandle* texture_map, const char* texture, unsigned int32 avg_color);
+bool c4_texture_map_handle_add_texture(C4TextureMapHandle* texture_map, const char* texture, uint32_t avg_color);
 const char* c4_texture_map_handle_get_texture(C4TextureMapHandle* texture_map, unsigned int index);
 
 const char* c4_texture_handle_get_entry_material_name(C4TextureMapHandle* texture_map, unsigned int index);
 const char* c4_texture_handle_get_entry_texture_name(C4TextureMapHandle* texture_map, unsigned int index);
 
-unsigned int32 c4_texture_handle_get_average_texture_color(C4TextureMapHandle* texture_map, const char* name);
+uint32_t c4_texture_handle_get_average_texture_color(C4TextureMapHandle* texture_map, const char* name);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* INC_MAPE_C4_TEXTURE_HANDLE_H */

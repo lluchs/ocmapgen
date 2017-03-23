@@ -15,7 +15,7 @@
 
 #include "C4Include.h"
 #include "c4group/C4Group.h"
-#include "mape/cpp-handles/group-handle.h"
+#include "group-handle.h"
 
 #define GROUP_TO_HANDLE(group) (reinterpret_cast<C4GroupHandle*>(group))
 #define HANDLE_TO_GROUP(handle) (reinterpret_cast<C4Group*>(handle))
@@ -56,7 +56,7 @@ const char* c4_group_handle_get_name(C4GroupHandle* handle)
 char* c4_group_handle_get_full_name(C4GroupHandle* handle)
 {
   StdStrBuf buf(HANDLE_TO_GROUP(handle)->GetFullName());
-  char* res = static_cast<char*>(g_malloc(buf.getSize()*sizeof(char)));
+  char* res = static_cast<char*>(malloc(buf.getSize()*sizeof(char)));
   memcpy(res, buf.getData(), buf.getSize());
   return res;
 }

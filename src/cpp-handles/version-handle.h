@@ -16,9 +16,14 @@
 #ifndef INC_MAPE_C4_VERSION_HANDLE_H
 #define INC_MAPE_C4_VERSION_HANDLE_H
 
-
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 const char* c4_version_get();
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* INC_MAPE_C4_TEXTURE_HANDLE_H */

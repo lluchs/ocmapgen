@@ -22,10 +22,10 @@
 #include "script/C4Aul.h"
 #include "lib/StdMeshLoader.h"
 
-#include "mape/cpp-handles/material-handle.h"
-#include "mape/cpp-handles/texture-handle.h"
-#include "mape/cpp-handles/log-handle.h"
-#include "mape/cpp-handles/mapgen-handle.h"
+#include "material-handle.h"
+#include "texture-handle.h"
+#include "log-handle.h"
+#include "mapgen-handle.h"
 
 #define HANDLE_TO_MATERIAL_MAP(handle) (reinterpret_cast<C4MaterialMap*>(handle))
 #define HANDLE_TO_TEXTURE_MAP(handle) (reinterpret_cast<C4TextureMap*>(handle))
@@ -208,15 +208,13 @@ C4MapgenHandle* c4_mapgen_handle_new(const char* filename, const char* source, c
 			if(script_path == nullptr)
 				throw std::runtime_error("For algo=script overlays to work, save the file first at the location of the Script.c file");
 
-			char* dirname = g_path_get_dirname(script_path);
-			char* basename = g_path_get_basename(script_path);
+			char dirname[_MAX_PATH]; GetParentPath(script_path, dirname);
+			const char* basename = GetFilename(script_path);
 
 			C4Group File;
 			if(!File.Open(dirname))
 			{
 				StdStrBuf error_msg = FormatString("Failed to open directory '%s': %s", dirname, File.GetError());
-				g_free(dirname);
-				g_free(basename);
 				throw std::runtime_error(error_msg.getData());
 			}
 
@@ -224,16 +222,12 @@ C4MapgenHandle* c4_mapgen_handle_new(const char* filename, const char* source, c
 			File.ResetSearch();
 			if(!File.FindNextEntry(basename, (char*)nullptr))
 			{
-				g_free(dirname);
-				g_free(basename);
 				StdStrBuf error_msg = FormatString("Failed to load '%s': No such file", script_path);
 				throw std::runtime_error(error_msg.getData());
 			}
 
 			c4_log_handle_clear();
 			GameScript.Load(File, basename, nullptr, nullptr);
-			g_free(dirname);
-			g_free(basename);
 
 			const char* parse_error = c4_log_handle_get_first_log_message();
 			if(parse_error)

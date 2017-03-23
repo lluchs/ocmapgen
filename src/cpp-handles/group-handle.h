@@ -16,7 +16,9 @@
 #ifndef INC_MAPE_C4_GROUP_HANDLE_H
 #define INC_MAPE_C4_GROUP_HANDLE_H
 
-
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef struct _C4GroupHandle C4GroupHandle;
 
@@ -40,5 +42,8 @@ size_t c4_group_handle_accessed_entry_size(C4GroupHandle* handle);
 bool c4_group_handle_read(C4GroupHandle* handle, void* buffer, size_t size);
 bool c4_group_handle_is_folder(C4GroupHandle* handle);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* INC_MAPE_C4_GROUP_HANDLE_H */

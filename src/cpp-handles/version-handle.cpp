@@ -14,7 +14,7 @@
  */
 
 #include "C4Version.h"
-#include "mape/cpp-handles/version-handle.h"
+#include "version-handle.h"
 
 extern "C" {
 

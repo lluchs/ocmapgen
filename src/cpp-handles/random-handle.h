@@ -16,9 +16,14 @@
 #ifndef INC_MAPE_C4_RANDOM_HANDLE_H
 #define INC_MAPE_C4_RANDOM_HANDLE_H
 
-
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 void c4_random_handle_seed(unsigned int seed);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* INC_MAPE_C4_RANDOM_HANDLE_H */

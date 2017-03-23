@@ -16,7 +16,7 @@
 #include "C4Include.h"
 #include "landscape/C4Material.h"
 #include "landscape/C4Texture.h"
-#include "mape/cpp-handles/material-handle.h"
+#include "material-handle.h"
 
 #define MATERIAL_MAP_TO_HANDLE(material_map) (reinterpret_cast<C4MaterialMapHandle*>(material_map))
 #define HANDLE_TO_MATERIAL_MAP(handle) (reinterpret_cast<C4MaterialMap*>(handle))
@@ -78,7 +78,7 @@ unsigned int c4_material_map_handle_get_num(C4MaterialMapHandle* material_map)
 
 C4MaterialHandle* c4_material_map_handle_get_material(C4MaterialMapHandle* material_map, unsigned int index)
 {
-  g_assert(index < (unsigned int)(HANDLE_TO_MATERIAL_MAP(material_map)->Num));
+  assert(index < (unsigned int)(HANDLE_TO_MATERIAL_MAP(material_map)->Num));
   return MATERIAL_TO_HANDLE(&HANDLE_TO_MATERIAL_MAP(material_map)->Map[index]);
 }
 

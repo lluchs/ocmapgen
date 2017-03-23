@@ -17,9 +17,12 @@
 #define INC_MAPE_C4_MATERIAL_HANDLE_H
 
 
-#include "mape/cpp-handles/group-handle.h"
-#include "mape/cpp-handles/texture-handle.h"
+#include "group-handle.h"
+#include "texture-handle.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef struct _C4MaterialHandle C4MaterialHandle;
 typedef struct _C4MaterialMapHandle C4MaterialMapHandle;
@@ -36,5 +39,8 @@ C4MaterialHandle* c4_material_map_handle_get_material(C4MaterialMapHandle* mater
 const char* c4_material_handle_get_name(C4MaterialHandle* material);
 const char* c4_material_handle_get_texture_overlay(C4MaterialHandle* material);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* INC_MAPE_C4_MATERIAL_HANDLE_H */

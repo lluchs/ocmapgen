@@ -15,7 +15,7 @@
 
 #include "C4Include.h"
 #include "landscape/C4Texture.h"
-#include "mape/cpp-handles/texture-handle.h"
+#include "texture-handle.h"
 
 #define TEXTURE_MAP_TO_HANDLE(texture_map) (reinterpret_cast<C4TextureMapHandle*>(texture_map))
 #define HANDLE_TO_TEXTURE_MAP(handle) (reinterpret_cast<C4TextureMap*>(handle))
@@ -46,18 +46,18 @@ unsigned int c4_texture_map_handle_load_map(C4TextureMapHandle* texture_map, C4G
 {
   bool fOverloadMaterials = false;
   bool fOverloadTextures = false;
-  unsigned int32 retval = HANDLE_TO_TEXTURE_MAP(texture_map)->LoadMap(*HANDLE_TO_GROUP(group), entry_name, &fOverloadMaterials, &fOverloadTextures);
+  uint32_t retval = HANDLE_TO_TEXTURE_MAP(texture_map)->LoadMap(*HANDLE_TO_GROUP(group), entry_name, &fOverloadMaterials, &fOverloadTextures);
   if(overload_materials) *overload_materials = fOverloadMaterials;
   if(overload_textures) *overload_textures = fOverloadTextures;
   return retval;
 }
 
-bool c4_texture_map_handle_add_texture(C4TextureMapHandle* texture_map, const char* texture, unsigned int32 avg_color)
+bool c4_texture_map_handle_add_texture(C4TextureMapHandle* texture_map, const char* texture, uint32_t avg_color)
 {
   bool result = HANDLE_TO_TEXTURE_MAP(texture_map)->AddTexture(texture, nullptr);
-  if(!result) return FALSE;
+  if(!result) return false;
   HANDLE_TO_TEXTURE_MAP(texture_map)->GetTexture(texture)->SetAverageColor(avg_color);
-  return TRUE;
+  return true;
 }
 
 const char* c4_texture_map_handle_get_texture(C4TextureMapHandle* texture_map, unsigned int index)
@@ -65,7 +65,7 @@ const char* c4_texture_map_handle_get_texture(C4TextureMapHandle* texture_map, u
   return HANDLE_TO_TEXTURE_MAP(texture_map)->GetTexture(index);
 }
 
-unsigned int32 c4_texture_handle_get_average_texture_color(C4TextureMapHandle* texture_map, const char* name)
+uint32_t c4_texture_handle_get_average_texture_color(C4TextureMapHandle* texture_map, const char* name)
 {
   return HANDLE_TO_TEXTURE_MAP(texture_map)->GetTexture(name)->GetAverageColor();
 }
