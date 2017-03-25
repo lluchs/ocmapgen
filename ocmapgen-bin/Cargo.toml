@@ -1,0 +1,16 @@
+[package]
+name = "ocmapgen-bin"
+version = "0.1.0"
+authors = ["Lukas Werling <lukas.werling@gmail.com>"]
+
+[[bin]]
+name = "ocmapgen"
+path = "src/main.rs"
+
+[dependencies]
+clap = "2.22"
+image = "0.12"
+
+[dependencies.ocmapgen]
+path = ".."
+version = "0.1"
