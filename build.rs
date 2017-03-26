@@ -20,6 +20,9 @@ fn main() {
         // the glue code.
         let c = Regex::new(r#"(?m)^find_package\("Audio"\)$"#).unwrap()
             .replace(&cmakelists, "#$0");
+        // Image libraries aren't required, so remove that dependency.
+        let c = Regex::new(r#"(?m)^find_package\((JPEG|PNG) REQUIRED\)$"#).unwrap()
+            .replace_all(&c, "#$0");
         // Mape's Log* symbols somehow override the ones in libmisc, but I can't get it to work
         // here. Just exclude the file instead.
         let c = Regex::new(r#"(?m)^\s*src/lib/C4SimpleLog\.cpp$"#).unwrap()
@@ -68,6 +71,10 @@ fn main() {
     println!("cargo:rustc-link-lib=static=libc4script");
     println!("cargo:rustc-link-lib=static=libmisc");
     println!("cargo:rustc-link-lib=z");
+
+    if env::var("TARGET").unwrap().contains("windows") {
+        println!("cargo:rustc-link-lib=winmm");
+    }
 
     // Generate ffi Rust bindings fo the cpp-handles header files.
     let bindings = bindgen::builder()
