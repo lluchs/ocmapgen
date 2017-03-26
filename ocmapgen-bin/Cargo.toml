@@ -1,6 +1,6 @@
 [package]
 name = "ocmapgen-bin"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Lukas Werling <lukas.werling@gmail.com>"]
 
 [[bin]]
@@ -13,4 +13,4 @@ image = "0.12"
 
 [dependencies.ocmapgen]
 path = ".."
-version = "0.1"
+version = "0.2"
