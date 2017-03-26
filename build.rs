@@ -10,6 +10,7 @@ use std::collections::HashMap;
 use std::io;
 use std::io::prelude::*;
 use std::fs::File;
+use std::env;
 
 fn main() {
     // Build libmisc and libc4script via cmake.
@@ -26,8 +27,10 @@ fn main() {
        .include("openclonk/include")
        .include("openclonk/thirdparty")
        .include(format!("{}/build", cmake_dst.display()));
-    cfg.define("HAVE_CONFIG_H", Some("1"))
-       .define("_DEBUG", Some("1"));
+    cfg.define("HAVE_CONFIG_H", Some("1"));
+    if env::var("PROFILE").unwrap() == "debug" {
+        cfg.define("_DEBUG", Some("1"));
+    }
 
     // Find file list from cmake.
     let cmakelists = read_file("openclonk/CMakeLists.txt").unwrap();
