@@ -12,6 +12,7 @@ use std::io::prelude::*;
 
 fn main() {
     let matches = App::new("ocmapgen")
+        .version(env!("CARGO_PKG_VERSION"))
         .arg(Arg::with_name("root")
              .short("r").long("root")
              .help("OpenClonk “planet” root directory (defaults to current directory)")
