@@ -13,6 +13,23 @@ use std::fs::File;
 use std::env;
 
 fn main() {
+    let cmakelists = read_file("openclonk/CMakeLists.txt").unwrap();
+    // We need to patch the openclonk CMakeLists.txt slightly to make the build work.
+    let cmakelists_patched = {
+        // Don't search for audio libraries to avoid having to specify the audio include path for
+        // the glue code.
+        let c = Regex::new(r#"(?m)^find_package\("Audio"\)$"#).unwrap()
+            .replace(&cmakelists, "#$0");
+        // Mape's Log* symbols somehow override the ones in libmisc, but I can't get it to work
+        // here. Just exclude the file instead.
+        let c = Regex::new(r#"(?m)^\s*src/lib/C4SimpleLog\.cpp$"#).unwrap()
+            .replace(&c, "#$0");
+        c.into_owned()
+    };
+    if cmakelists_patched != cmakelists {
+        write_file("openclonk/CMakeLists.txt", &cmakelists_patched).unwrap();
+    }
+
     // Build libmisc and libc4script via cmake.
     let mut cmake_cfg = cmake::Config::new("openclonk");
     cmake_cfg.define("HEADLESS_ONLY", "ON");
@@ -33,7 +50,6 @@ fn main() {
     }
 
     // Find file list from cmake.
-    let cmakelists = read_file("openclonk/CMakeLists.txt").unwrap();
     let cmake_vars = get_cmake_vars(&cmakelists);
     for f in cmake_vars.get("MAPE_BASE_SOURCES").unwrap().iter()
                        .filter(|f| f.ends_with("cpp")) {
@@ -68,10 +84,16 @@ fn main() {
         }
     }
 }
+
 fn read_file(path: &str) -> io::Result<String> {
     let mut contents = String::new();
     File::open(path)?.read_to_string(&mut contents)?;
     Ok(contents)
+}
+
+fn write_file(path: &str, contents: &str) -> io::Result<()> {
+    File::create(path)?
+        .write_all(contents.as_bytes())
 }
 
 fn get_cmake_vars(cmakelists: &str) -> HashMap<String, Vec<String>> {
