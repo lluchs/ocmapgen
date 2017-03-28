@@ -2,7 +2,6 @@ extern crate cmake;
 extern crate gcc;
 extern crate regex;
 extern crate glob;
-extern crate bindgen;
 
 use glob::glob;
 use regex::Regex;
@@ -75,15 +74,6 @@ fn main() {
     if env::var("TARGET").unwrap().contains("windows") {
         println!("cargo:rustc-link-lib=winmm");
     }
-
-    // Generate ffi Rust bindings fo the cpp-handles header files.
-    let bindings = bindgen::builder()
-        .header("src/cpp-handles/bindgen.h")
-        .whitelisted_function("c4_.+")
-        .raw_line("#![allow(dead_code)]")
-        .generate()
-        .unwrap();
-    bindings.write_to_file("src/ffi.rs").unwrap();
 
     for entry in glob("src/cpp-handles/*.h").unwrap() {
         if let Ok(f) = entry {
