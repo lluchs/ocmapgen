@@ -1,5 +1,7 @@
 #[macro_use]
 extern crate clap;
+#[macro_use]
+extern crate error_chain;
 extern crate image;
 extern crate ocmapgen;
 
@@ -8,7 +10,10 @@ use ocmapgen::easy::Easy;
 
 use std::path::Path;
 
-fn main() {
+error_chain! { }
+
+quick_main!(run);
+fn run() -> Result<()> {
     let matches = App::new("ocmapgen")
         .version(env!("CARGO_PKG_VERSION"))
         .arg(Arg::with_name("root")
@@ -42,23 +47,25 @@ fn main() {
         Some(p) => p.to_owned(),
         None => {
             let mut p = Path::new(input_file).canonicalize()
-                        .expect("couldn't resolve input file path");
+                        .chain_err(|| "couldn't resolve input file path")?;
             p.pop();
             p.to_str().unwrap().to_owned()
         }
     };
     mapgen.set_base_path(base_path)
-        .expect("couldn't find Material.ocg or Objects.ocd");
+        .chain_err(|| "couldn't find Material.ocg or Objects.ocd")?;
 
     let width = value_t!(matches.value_of("width"), u32)
-                .expect("invalid width");
+                .chain_err(|| "invalid width")?;
     let height = value_t!(matches.value_of("height"), u32)
-                .expect("invalid height");
+                .chain_err(|| "invalid height")?;
     let mut cfg = mapgen.build();
     let map = cfg.filename(input_file)
        .width(width)
        .height(height)
-       .render().expect("map rendering failed");
+       .render().chain_err(|| "map rendering failed")?;
     map.save(matches.value_of("OUTPUT").unwrap())
-       .expect("writing output image failed");
+       .chain_err(|| "writing output image failed")?;
+
+    Ok(())
 }

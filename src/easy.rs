@@ -166,7 +166,8 @@ impl<'a> RenderConfig<'a> {
         let source = match self.source {
             Some(ref s) => s.clone(),
             None => if self.filename.is_some() {
-                        read_file(filename)?
+                        read_file(filename)
+                            .chain_err(|| "couldn't read input file")?
                     } else {
                         bail!("neither source nor filename set")
                     }
