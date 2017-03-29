@@ -1,4 +1,3 @@
-//extern crate libc;
 extern crate image;
 #[macro_use]
 extern crate error_chain;
@@ -13,12 +12,16 @@ trait Handle<T> {
     fn handle(&self) -> *mut T;
 }
 
+pub mod easy;
 pub use group::Group;
 pub use mattex::{MaterialMap, TextureMap};
 pub use mapgen::MapGen;
 
 mod errors {
     error_chain! {
+        foreign_links {
+            Io(::std::io::Error);
+        }
         errors {
             Group(err: String) {
                 description("c4group error")
@@ -30,6 +33,10 @@ mod errors {
             MapGen(err: String) {
                 description("map generation error")
                 display("{}", err)
+            }
+            MapTypeDetectionFailed(name: String) {
+                description("couldn't autodetect map type")
+                display("file '{}' has neither Landscape.txt nor Map.c file type", name)
             }
         }
     }

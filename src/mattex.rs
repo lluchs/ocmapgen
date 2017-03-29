@@ -114,7 +114,8 @@ impl TextureMap {
     }
 
     /// Loads texture mappings from TexMap.txt.
-    /// Returns the number of textures loaded or a NothingLoaded error.
+    /// Returns the number of textures loaded as well as whether the Material.ocg overloads the
+    /// base one.
     pub fn load_map(&mut self, group: &Group) -> Result<LoadTextureMapResult> {
         unsafe {
             let mut overload_materials = false;
@@ -124,9 +125,7 @@ impl TextureMap {
                                                         CString::new("TexMap.txt").unwrap().as_ptr(),
                                                         &mut overload_materials,
                                                         &mut overload_textures);
-            if result == 0 {
-                bail!(ErrorKind::NothingLoaded);
-            }
+            // Currently cannot fail.
             Ok(LoadTextureMapResult {
                 num_loaded: result,
                 overload_materials: overload_materials,
