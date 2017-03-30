@@ -191,6 +191,31 @@ extern "C" {
                                                       *mut C4MaterialHandle)
      -> *const ::std::os::raw::c_char;
 }
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct _C4ScenparHandle([u8; 0]);
+pub type C4ScenparHandle = _C4ScenparHandle;
+extern "C" {
+    pub fn c4_scenpar_handle_new() -> *mut C4ScenparHandle;
+}
+extern "C" {
+    pub fn c4_scenpar_handle_free(handle: *mut C4ScenparHandle);
+}
+extern "C" {
+    pub fn c4_scenpar_handle_load(handle: *mut C4ScenparHandle,
+                                  group: *mut C4GroupHandle) -> bool;
+}
+extern "C" {
+    pub fn c4_scenpar_handle_get_value_by_id(handle: *mut C4ScenparHandle,
+                                             id:
+                                                 *const ::std::os::raw::c_char,
+                                             default_value: i32) -> i32;
+}
+extern "C" {
+    pub fn c4_scenpar_handle_set_value(handle: *mut C4ScenparHandle,
+                                       id: *const ::std::os::raw::c_char,
+                                       value: i32, only_if_larger: bool);
+}
 extern "C" {
     pub fn c4_mapgen_handle_init_script_engine();
 }
@@ -204,6 +229,7 @@ extern "C" {
     pub fn c4_mapgen_handle_new_script(filename:
                                            *const ::std::os::raw::c_char,
                                        source: *const ::std::os::raw::c_char,
+                                       scenpar: *mut C4ScenparHandle,
                                        material_map: *mut C4MaterialMapHandle,
                                        texture_map: *mut C4TextureMapHandle,
                                        map_width: ::std::os::raw::c_uint,

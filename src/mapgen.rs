@@ -2,11 +2,13 @@ use ffi::*;
 use errors::*;
 use group::Group;
 use mattex::{MaterialMap, TextureMap};
+use scenpar::Scenpar;
 use super::Handle;
 
 use std::ffi::{CStr, CString};
 use std::slice;
 use std::cell::RefCell;
+use std::ptr;
 use image::{self, ImageBuffer, RgbImage};
 
 pub struct MapGen {
@@ -58,12 +60,13 @@ impl MapGen {
         Ok(mapgen.get_map())
     }
 
-    pub fn render_script(&self, filename: &str, source: &str, material_map: &MaterialMap, texture_map: &TextureMap, map_width: u32, map_height: u32) -> Result<RgbImage> {
+    pub fn render_script(&self, filename: &str, source: &str, scenpar: Option<&Scenpar>, material_map: &MaterialMap, texture_map: &TextureMap, map_width: u32, map_height: u32) -> Result<RgbImage> {
         let mapgen = unsafe {
             MapGenHandle {
                 handle: c4_mapgen_handle_new_script(
                             CString::new(filename).unwrap().as_ptr(),
                             CString::new(source).unwrap().as_ptr(),
+                            scenpar.map(|s| s.handle()).unwrap_or_else(|| ptr::null_mut()),
                             material_map.handle(),
                             texture_map.handle(),
                             map_width,

@@ -31,6 +31,12 @@
 #define HANDLE_TO_TEXTURE_MAP(handle) (reinterpret_cast<C4TextureMap*>(handle))
 #define HANDLE_TO_GROUP(handle) (reinterpret_cast<C4Group*>(handle))
 
+#include "player/C4ScenarioParameters.h"
+struct _C4ScenparHandle {
+	C4ScenarioParameterDefs parameter_defs;
+	C4ScenarioParameters parameters;
+};
+
 namespace
 {
 
@@ -95,13 +101,18 @@ void c4_mapgen_handle_set_map_library(C4GroupHandle* group_handle)
 	}
 }
 
-C4MapgenHandle* c4_mapgen_handle_new_script(const char* filename, const char* source, C4MaterialMapHandle* material_map, C4TextureMapHandle* texture_map, unsigned int map_width, unsigned int map_height)
+C4MapgenHandle* c4_mapgen_handle_new_script(const char* filename, const char* source, C4ScenparHandle* scenpar, C4MaterialMapHandle* material_map, C4TextureMapHandle* texture_map, unsigned int map_width, unsigned int map_height)
 {
 	// Re-initialize script engine. Otherwise, we get a warning when the user
 	// changes the value of a constant, since it is defined already from the
 	// previous map rendering.  Note that we do not need to re-load the map library.
 	c4_mapgen_handle_deinit_script_engine();
 	c4_mapgen_handle_init_script_engine();
+
+	if (scenpar)
+	{
+		scenpar->parameter_defs.RegisterScriptConstants(scenpar->parameters);
+	}
 
 	try
 	{

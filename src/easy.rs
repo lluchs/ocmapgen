@@ -1,4 +1,4 @@
-use super::{Group, MaterialMap, TextureMap, MapGen};
+use super::{Group, MaterialMap, TextureMap, Scenpar, MapGen};
 use super::errors::*;
 use image;
 
@@ -98,6 +98,7 @@ impl Easy {
             width: 200,
             height: 200,
             algo_script_path: None,
+            scenpar: None,
         }
     }
 }
@@ -117,42 +118,49 @@ pub struct RenderConfig<'a> {
     width: u32,
     height: u32,
     algo_script_path: Option<String>,
+    scenpar: Option<&'a Scenpar>,
 }
 
 impl<'a> RenderConfig<'a> {
     /// Set the map type. Per default, this is inferred from the file name.
-    pub fn map_type(&'a mut self, map_type: MapType) -> &'a mut RenderConfig {
+    pub fn map_type<'b>(&'b mut self, map_type: MapType) -> &'b mut RenderConfig<'a> {
         self.map_type = Some(map_type);
         self
     }
 
     /// Set the file name. The file name is used in error messages.
-    pub fn filename(&'a mut self, filename: &str) -> &'a mut RenderConfig {
+    pub fn filename<'b>(&'b mut self, filename: &str) -> &'b mut RenderConfig<'a> {
         self.filename = Some(filename.into());
         self
     }
 
     /// Set the map source code. If unset, tries to read the file path set using `filename`.
-    pub fn source(&'a mut self, source: &str) -> &'a mut RenderConfig {
+    pub fn source<'b>(&'b mut self, source: &str) -> &'b mut RenderConfig<'a> {
         self.source = Some(source.into());
         self
     }
 
     /// Set the output map width. Note that script Map.c can override the map size.
-    pub fn width(&'a mut self, width: u32) -> &'a mut RenderConfig {
+    pub fn width<'b>(&'b mut self, width: u32) -> &'b mut RenderConfig<'a> {
         self.width = width;
         self
     }
 
     /// Set the output map height. Note that script Map.c can override the map size.
-    pub fn height(&'a mut self, height: u32) -> &'a mut RenderConfig {
+    pub fn height<'b>(&'b mut self, height: u32) -> &'b mut RenderConfig<'a> {
         self.height = height;
         self
     }
 
     /// Sets the script path for Algo=Script Landscape.txt maps.
-    pub fn algo_script_path(&'a mut self, algo_script_path: &str) -> &'a mut RenderConfig {
+    pub fn algo_script_path<'b>(&'b mut self, algo_script_path: &str) -> &'b mut RenderConfig<'a> {
         self.algo_script_path = Some(algo_script_path.into());
+        self
+    }
+
+    /// Sets scenario parameters to load for script Map.c.
+    pub fn scenpar<'b>(&'b mut self, scenpar: &'a Scenpar) -> &'b mut RenderConfig<'a> {
+        self.scenpar = Some(scenpar);
         self
     }
 
@@ -174,7 +182,13 @@ impl<'a> RenderConfig<'a> {
         };
         let algo_script_path = || self.algo_script_path.as_ref().map(|f| f.as_str()).unwrap_or("");
         match map_type {
-            MapType::MapC => self.easy.mapgen.render_script(filename, &source, &self.easy.material_map, &self.easy.texture_map, self.width, self.height),
+            MapType::MapC => self.easy.mapgen.render_script(filename,
+                                                            &source,
+                                                            self.scenpar.clone(),
+                                                            &self.easy.material_map,
+                                                            &self.easy.texture_map,
+                                                            self.width,
+                                                            self.height),
             MapType::LandscapeTxt => self.easy.mapgen.render_landscape(filename, &source, algo_script_path(), &self.easy.material_map, &self.easy.texture_map, self.width, self.height),
         }
     }
@@ -195,4 +209,19 @@ fn read_file(path: &str) -> io::Result<String> {
     let mut contents = String::new();
     File::open(path)?.read_to_string(&mut contents)?;
     Ok(contents)
+}
+
+/// Tries to load a ParameterDefs.txt from the given directory.
+///
+/// Returns a NoParameterDefs error if there is no such file.
+pub fn load_scenpar<P: AsRef<Path>>(path: P) -> Result<Scenpar> {
+    let path = path.as_ref().canonicalize()?;
+    if path.join("ParameterDefs.txt").exists() {
+        let group = Group::open(&path.to_str().unwrap(), false)?;
+        let mut scenpar = Scenpar::new();
+        scenpar.load(&group)?;
+        Ok(scenpar)
+    } else {
+        bail!(ErrorKind::NoParameterDefs)
+    }
 }

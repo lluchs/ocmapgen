@@ -57,6 +57,7 @@ fn main() {
                        .filter(|f| f.ends_with("cpp")) {
         cfg.file(format!("openclonk/{}", f));
     }
+    cfg.file("openclonk/src/player/C4ScenarioParameters.cpp");
 
     for entry in glob("src/cpp-handles/*.cpp").unwrap() {
         if let Ok(f) = entry {

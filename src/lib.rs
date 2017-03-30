@@ -5,6 +5,7 @@ extern crate error_chain;
 mod ffi;
 mod group;
 mod mattex;
+mod scenpar;
 mod mapgen;
 
 /// Used to access handle pointers across modules internally.
@@ -15,6 +16,7 @@ trait Handle<T> {
 pub mod easy;
 pub use group::Group;
 pub use mattex::{MaterialMap, TextureMap};
+pub use scenpar::Scenpar;
 pub use mapgen::MapGen;
 
 mod errors {
@@ -37,6 +39,9 @@ mod errors {
             MapTypeDetectionFailed(name: String) {
                 description("couldn't autodetect map type")
                 display("file '{}' has neither Landscape.txt nor Map.c file type", name)
+            }
+            NoParameterDefs {
+                description("no ParameterDefs.txt file found")
             }
         }
     }

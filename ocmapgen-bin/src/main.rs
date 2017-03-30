@@ -6,7 +6,7 @@ extern crate image;
 extern crate ocmapgen;
 
 use clap::{Arg, App};
-use ocmapgen::easy::Easy;
+use ocmapgen::easy::{Easy, load_scenpar};
 
 use std::path::Path;
 
@@ -19,8 +19,7 @@ fn run() -> Result<()> {
         .arg(Arg::with_name("root")
              .short("r").long("root")
              .help("Base directory. Should be a subdirectory of the OpenClonk “planet” root directory (defaults to directory of input file)")
-             .takes_value(true)
-             .default_value("."))
+             .takes_value(true))
         .arg(Arg::with_name("width")
              .short("w").long("width")
              .help("Width of the output image")
@@ -52,14 +51,18 @@ fn run() -> Result<()> {
             p.to_str().unwrap().to_owned()
         }
     };
-    mapgen.set_base_path(base_path)
+    mapgen.set_base_path(&base_path)
         .chain_err(|| "couldn't find Material.ocg or Objects.ocd")?;
 
     let width = value_t!(matches.value_of("width"), u32)
                 .chain_err(|| "invalid width")?;
     let height = value_t!(matches.value_of("height"), u32)
                 .chain_err(|| "invalid height")?;
+    let maybe_scenpar = load_scenpar(&base_path);
     let mut cfg = mapgen.build();
+    if let Ok(ref scenpar) = maybe_scenpar {
+        cfg.scenpar(scenpar);
+    }
     let map = cfg.filename(input_file)
        .width(width)
        .height(height)
