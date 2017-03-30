@@ -11,6 +11,7 @@ path = "src/main.rs"
 clap = "2.22"
 image = "0.12"
 error-chain = "0.10"
+notify = "4.0"
 
 [dependencies.ocmapgen]
 path = ".."

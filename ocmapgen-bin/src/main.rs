@@ -3,12 +3,16 @@ extern crate clap;
 #[macro_use]
 extern crate error_chain;
 extern crate image;
+extern crate notify;
 extern crate ocmapgen;
 
 use clap::{Arg, App};
-use ocmapgen::easy::{Easy, load_scenpar};
+use notify::{Watcher, RecursiveMode, DebouncedEvent, watcher};
+use ocmapgen::easy::{Easy, RenderConfig, load_scenpar};
 
 use std::path::Path;
+use std::sync::mpsc::channel;
+use std::time::Duration;
 
 error_chain! { }
 
@@ -30,6 +34,10 @@ fn run() -> Result<()> {
              .help("Height of the output image")
              .takes_value(true)
              .default_value("200"))
+        .arg(Arg::with_name("watch")
+             .long("watch")
+             .help("Watch input file for changes")
+             .takes_value(false))
         .arg(Arg::with_name("INPUT")
              .help("Input file (e.g. Map.c)")
              .required(true)
@@ -41,12 +49,14 @@ fn run() -> Result<()> {
         .get_matches();
 
     let mut mapgen = Easy::new();
-    let input_file = matches.value_of("INPUT").unwrap();
+    let input_file = Path::new(matches.value_of("INPUT").unwrap())
+        .canonicalize()
+        .chain_err(|| "couldn't resolve input file path")?;
+    let output_file = matches.value_of("OUTPUT").unwrap();
     let base_path = match matches.value_of("root") {
         Some(p) => p.to_owned(),
         None => {
-            let mut p = Path::new(input_file).canonicalize()
-                        .chain_err(|| "couldn't resolve input file path")?;
+            let mut p = input_file.clone();
             p.pop();
             p.to_str().unwrap().to_owned()
         }
@@ -63,12 +73,48 @@ fn run() -> Result<()> {
     if let Ok(ref scenpar) = maybe_scenpar {
         cfg.scenpar(scenpar);
     }
-    let map = cfg.filename(input_file)
+    cfg.filename(input_file.to_str().unwrap())
        .width(width)
-       .height(height)
-       .render().chain_err(|| "map rendering failed")?;
-    map.save(matches.value_of("OUTPUT").unwrap())
-       .chain_err(|| "writing output image failed")?;
+       .height(height);
+
+    render(&cfg, output_file)?;
+
+    if matches.is_present("watch") {
+        watch(&cfg, &input_file, output_file)?;
+    }
 
     Ok(())
+}
+
+fn render(cfg: &RenderConfig, output_file: &str) -> Result<()> {
+    let map = cfg.render().chain_err(|| "map rendering failed")?;
+    map.save(output_file)
+       .chain_err(|| "writing output image failed")?;
+    Ok(())
+}
+
+fn watch(cfg: &RenderConfig, input_file: &Path, output_file: &str) -> Result<()> {
+    let (tx, rx) = channel();
+    let mut watcher = watcher(tx, Duration::from_millis(100))
+        .chain_err(|| "could not initialize watcher")?;
+
+    // Watch the parent directory as the file may be removed temporarily on write.
+    let dir = input_file.parent().unwrap();
+    watcher.watch(dir, RecursiveMode::NonRecursive)
+        .chain_err(|| "could not start watcher")?;
+
+    println!("Waiting for file changes…");
+
+    loop {
+        let event = rx.recv().chain_err(|| "watch error")?;
+        let rerender = match event {
+            DebouncedEvent::Create(f) | DebouncedEvent::Write(f)
+                => f == input_file,
+            _   => false
+        };
+        if rerender {
+            println!("File changed, rendering map…");
+            render(cfg, output_file)?;
+        }
+    }
 }
