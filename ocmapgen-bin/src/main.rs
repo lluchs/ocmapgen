@@ -54,6 +54,10 @@ fn run() -> Result<()> {
              .long("watch")
              .help("Watch input file for changes")
              .takes_value(false))
+        .arg(Arg::with_name("bg-output")
+             .long("bg")
+             .help("Write map background to file")
+             .takes_value(true))
         .arg(Arg::with_name("INPUT")
              .help("Input file (e.g. Map.c)")
              .required(true)
@@ -106,23 +110,30 @@ fn run() -> Result<()> {
        .width(width)
        .height(height);
 
-    render(&cfg, output_file)?;
+    let bg_output = matches.value_of("bg-output");
+    render(&cfg, output_file, bg_output)?;
 
     if matches.is_present("watch") {
-        watch(&cfg, &input_file, output_file, matches.value_of("seed").map(|_| seed))?;
+        watch(&cfg, &input_file, output_file, bg_output, matches.value_of("seed").map(|_| seed))?;
     }
 
     Ok(())
 }
 
-fn render(cfg: &RenderConfig, output_file: &str) -> Result<()> {
-    let map = cfg.render().chain_err(|| "map rendering failed")?;
-    map.save(output_file)
-       .chain_err(|| "writing output image failed")?;
+fn render(cfg: &RenderConfig, output_file: &str, output_file_bg: Option<&str>) -> Result<()> {
+    let map_handle = cfg.render().chain_err(|| "map rendering failed")?;
+    map_handle.map_as_image()
+              .save(output_file)
+              .chain_err(|| "writing output image failed")?;
+    if let Some(output_file_bg) = output_file_bg {
+        map_handle.map_bg_as_image()
+                  .save(output_file_bg)
+                  .chain_err(|| "writing bg output image failed")?;
+    }
     Ok(())
 }
 
-fn watch(cfg: &RenderConfig, input_file: &Path, output_file: &str, seed: Option<u32>) -> Result<()> {
+fn watch(cfg: &RenderConfig, input_file: &Path, output_file: &str, output_file_bg: Option<&str>, seed: Option<u32>) -> Result<()> {
     let (tx, rx) = channel();
     let mut watcher = watcher(tx, Duration::from_millis(100))
         .chain_err(|| "could not initialize watcher")?;
@@ -146,7 +157,7 @@ fn watch(cfg: &RenderConfig, input_file: &Path, output_file: &str, seed: Option<
             if let Some(seed) = seed {
                 seed_rng(seed);
             }
-            report_error(render(cfg, output_file));
+            report_error(render(cfg, output_file, output_file_bg.clone()));
         }
     }
 }

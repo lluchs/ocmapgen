@@ -84,7 +84,7 @@ struct _C4MapgenHandle {
 	unsigned int height;
 	unsigned int rowstride;
 	StdCopyStrBuf error_message;
-	BYTE* data;
+	std::unique_ptr<CSurface8> fg, bg;
 };
 
 void c4_mapgen_handle_init_script_engine()
@@ -233,8 +233,8 @@ C4MapgenHandle* c4_mapgen_handle_new_script(const char* filename, const char* so
 		handle->height = out_ptr_fg->Hgt;
 		handle->rowstride = out_ptr_fg->Wdt;
 		handle->error_message = nullptr;
-		handle->data = out_ptr_fg->Bits;
-		out_ptr_fg->ReleaseBuffer();
+		handle->fg = std::move(out_ptr_fg);
+		handle->bg = std::move(out_ptr_bg);
 
 		return handle;
 	}
@@ -244,7 +244,8 @@ C4MapgenHandle* c4_mapgen_handle_new_script(const char* filename, const char* so
 		handle->width = 0;
 		handle->height = 0;
 		handle->error_message.Copy(ex.what());
-		handle->data = nullptr;
+		handle->fg = nullptr;
+		handle->bg = nullptr;
 		return handle;
 	}
 }
@@ -319,23 +320,24 @@ C4MapgenHandle* c4_mapgen_handle_new(const char* filename, const char* source, c
 		}
 
 		c4_log_handle_clear();
-		int32_t out_width, out_height;
-		BYTE* array = mapgen.RenderBuf(nullptr, out_width, out_height);
+		CSurface8 *_out_ptr_fg = nullptr, *_out_ptr_bg = nullptr;
+		mapgen.Render(nullptr, _out_ptr_fg, _out_ptr_bg);
+		std::unique_ptr<CSurface8> out_ptr_fg(_out_ptr_fg), out_ptr_bg(_out_ptr_bg);
 
 		// Don't show any map if there was a script runtime error
 		const char* runtime_error = c4_log_handle_get_first_log_message();
 		if(runtime_error)
 		{
-			delete[] array;
 			throw std::runtime_error(runtime_error);
 		}
 
 		C4MapgenHandle* handle = new C4MapgenHandle;
-		handle->width = map_width;
-		handle->height = map_height;
-		handle->rowstride = out_width;
+		handle->width = out_ptr_fg->Wdt;
+		handle->height = out_ptr_fg->Hgt;
+		handle->rowstride = out_ptr_fg->Wdt;
 		handle->error_message = nullptr;
-		handle->data = array;
+		handle->fg = std::move(out_ptr_fg);
+		handle->bg = std::move(out_ptr_bg);
 		return handle;
 	}
 	catch(const C4MCParserErr& err)
@@ -344,7 +346,8 @@ C4MapgenHandle* c4_mapgen_handle_new(const char* filename, const char* source, c
 		handle->width = 0;
 		handle->height = 0;
 		handle->error_message.Copy(err.Msg);
-		handle->data = nullptr;
+		handle->fg = nullptr;
+		handle->bg = nullptr;
 		return handle;
 	}
 	catch(const std::exception& ex)
@@ -353,43 +356,48 @@ C4MapgenHandle* c4_mapgen_handle_new(const char* filename, const char* source, c
 		handle->width = 0;
 		handle->height = 0;
 		handle->error_message.Copy(ex.what());
-		handle->data = nullptr;
+		handle->fg = nullptr;
+		handle->bg = nullptr;
 		return handle;
 	}
 }
 
 void c4_mapgen_handle_free(C4MapgenHandle* mapgen)
 {
-	delete[] mapgen->data;
 	delete mapgen;
 }
 
 const unsigned char* c4_mapgen_handle_get_map(C4MapgenHandle* mapgen)
 {
-	return reinterpret_cast<unsigned char*>(mapgen->data);
+	return reinterpret_cast<unsigned char*>(mapgen->fg->Bits);
+}
+
+const unsigned char* c4_mapgen_handle_get_bg(C4MapgenHandle* mapgen)
+{
+	return reinterpret_cast<unsigned char*>(mapgen->bg->Bits);
 }
 
 unsigned int c4_mapgen_handle_get_width(C4MapgenHandle* mapgen)
 {
-	assert(mapgen->data != nullptr);
+	assert(mapgen->fg);
 	return mapgen->width;
 }
 
 unsigned int c4_mapgen_handle_get_height(C4MapgenHandle* mapgen)
 {
-	assert(mapgen->data != nullptr);
+	assert(mapgen->fg);
 	return mapgen->height;
 }
 
 unsigned int c4_mapgen_handle_get_rowstride(C4MapgenHandle* mapgen)
 {
-	assert(mapgen->data != nullptr);
+	assert(mapgen->fg);
 	return mapgen->rowstride;
 }
 
 const char* c4_mapgen_handle_get_error(C4MapgenHandle* mapgen)
 {
-	if(mapgen->data != nullptr)
+	if(mapgen->fg)
 		return nullptr;
 	return mapgen->error_message.getData();
 }

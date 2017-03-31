@@ -1,6 +1,5 @@
-use super::{Group, MaterialMap, TextureMap, Scenpar, MapGen};
+use super::{Group, MaterialMap, TextureMap, Scenpar, MapGen, MapGenHandle};
 use super::errors::*;
-use image;
 
 use std::io::prelude::*;
 use std::io;
@@ -168,7 +167,7 @@ impl<'a> RenderConfig<'a> {
     }
 
     /// Renders the map!
-    pub fn render(&self) -> Result<image::RgbImage> {
+    pub fn render(&self) -> Result<MapGenHandle> {
         let map_type = match self.map_type {
             Some(t) => t,
             None => self.autodetect_map_type()?

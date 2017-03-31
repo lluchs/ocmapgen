@@ -269,6 +269,10 @@ extern "C" {
      -> *const ::std::os::raw::c_uchar;
 }
 extern "C" {
+    pub fn c4_mapgen_handle_get_bg(mapgen: *mut C4MapgenHandle)
+     -> *const ::std::os::raw::c_uchar;
+}
+extern "C" {
     pub fn c4_mapgen_handle_get_width(mapgen: *mut C4MapgenHandle)
      -> ::std::os::raw::c_uint;
 }

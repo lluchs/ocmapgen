@@ -18,7 +18,7 @@ pub mod easy;
 pub use group::Group;
 pub use mattex::{MaterialMap, TextureMap};
 pub use scenpar::Scenpar;
-pub use mapgen::MapGen;
+pub use mapgen::{MapGen, MapGenHandle};
 pub use misc::*;
 
 mod errors {

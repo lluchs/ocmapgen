@@ -14,7 +14,7 @@ use image::{self, ImageBuffer, RgbImage};
 pub struct MapGen {
 }
 
-struct MapGenHandle<'a> {
+pub struct MapGenHandle<'a> {
     handle: *mut C4MapgenHandle,
     material_map: &'a MaterialMap,
     texture_map: &'a TextureMap,
@@ -69,7 +69,8 @@ impl MapGen {
         unsafe { c4_mapgen_handle_set_startup_team_count(count); }
     }
 
-    pub fn render_landscape(&self, filename: &str, source: &str, script_path: &str, material_map: &MaterialMap, texture_map: &TextureMap, map_width: u32, map_height: u32) -> Result<RgbImage> {
+    /// Render a Landscape.txt map.
+    pub fn render_landscape<'a>(&self, filename: &str, source: &str, script_path: &str, material_map: &'a MaterialMap, texture_map: &'a TextureMap, map_width: u32, map_height: u32) -> Result<MapGenHandle<'a>> {
         let mapgen = unsafe {
             MapGenHandle {
                 handle: c4_mapgen_handle_new(
@@ -86,10 +87,11 @@ impl MapGen {
             }
         };
         mapgen.error()?;
-        Ok(mapgen.get_map())
+        Ok(mapgen)
     }
 
-    pub fn render_script(&self, filename: &str, source: &str, scenpar: Option<&Scenpar>, material_map: &MaterialMap, texture_map: &TextureMap, map_width: u32, map_height: u32) -> Result<RgbImage> {
+    /// Render a Map.c map.
+    pub fn render_script<'a>(&self, filename: &str, source: &str, scenpar: Option<&Scenpar>, material_map: &'a MaterialMap, texture_map: &'a TextureMap, map_width: u32, map_height: u32) -> Result<MapGenHandle<'a>> {
         let mapgen = unsafe {
             MapGenHandle {
                 handle: c4_mapgen_handle_new_script(
@@ -106,7 +108,7 @@ impl MapGen {
             }
         };
         mapgen.error()?;
-        Ok(mapgen.get_map())
+        Ok(mapgen)
     }
 }
 
@@ -119,7 +121,7 @@ impl Drop for MapGen {
 }
 
 impl<'a> MapGenHandle<'a> {
-    pub fn error(&self) -> Result<()> {
+    fn error(&self) -> Result<()> {
         unsafe {
             let error_message = c4_mapgen_handle_get_error(self.handle);
             if error_message.is_null() {
@@ -130,29 +132,44 @@ impl<'a> MapGenHandle<'a> {
         }
     }
 
-    pub fn width(&self) -> u32 {
+    fn width(&self) -> u32 {
         unsafe {
             c4_mapgen_handle_get_width(self.handle)
         }
     }
 
-    pub fn height(&self) -> u32 {
+    fn height(&self) -> u32 {
         unsafe {
             c4_mapgen_handle_get_height(self.handle)
         }
     }
 
-    pub fn rowstride(&self) -> u32 {
+    fn rowstride(&self) -> u32 {
         unsafe {
             c4_mapgen_handle_get_rowstride(self.handle)
         }
     }
 
-    pub fn get_map(&self) -> RgbImage {
+    /// Returns the foreground map as image.
+    pub fn map_as_image(&self) -> RgbImage {
+        let width = self.width();
+        let height = self.height();
+        let data: &[u8] = unsafe { slice::from_raw_parts(c4_mapgen_handle_get_map(self.handle), (width * height) as usize) };
+        self.map_to_image(data)
+    }
+
+    /// Returns the background map as image.
+    pub fn map_bg_as_image(&self) -> RgbImage {
+        let width = self.width();
+        let height = self.height();
+        let data: &[u8] = unsafe { slice::from_raw_parts(c4_mapgen_handle_get_bg(self.handle), (width * height) as usize) };
+        self.map_to_image(data)
+    }
+
+    fn map_to_image(&self, data: &[u8]) -> RgbImage {
         let width = self.width();
         let height = self.height();
         let rowstride = self.rowstride();
-        let data: &[u8] = unsafe { slice::from_raw_parts(c4_mapgen_handle_get_map(self.handle), (width * height) as usize) };
         let mat_colors = RefCell::new(vec![None; 256]);
         ImageBuffer::from_fn(width, height, move |x, y| {
             let mut mat_colors = mat_colors.borrow_mut();

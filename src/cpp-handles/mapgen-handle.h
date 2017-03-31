@@ -40,6 +40,7 @@ C4MapgenHandle* c4_mapgen_handle_new(const char* filename, const char* source, c
 void c4_mapgen_handle_free(C4MapgenHandle* mapgen);
 
 const unsigned char* c4_mapgen_handle_get_map(C4MapgenHandle* mapgen);
+const unsigned char* c4_mapgen_handle_get_bg(C4MapgenHandle* mapgen);
 unsigned int c4_mapgen_handle_get_width(C4MapgenHandle* mapgen);
 unsigned int c4_mapgen_handle_get_height(C4MapgenHandle* mapgen);
 unsigned int c4_mapgen_handle_get_rowstride(C4MapgenHandle* mapgen);
