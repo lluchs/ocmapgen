@@ -20,13 +20,10 @@ impl MaterialMap {
         }
     }
 
-    /// Returns the number of materials loaded or a NothingLoaded error.
+    /// Returns the number of materials loaded.
     pub fn load(&mut self, group: &Group) -> Result<u32> {
         unsafe {
             let result = c4_material_map_handle_load(self.handle, group.handle());
-            if result == 0 {
-                bail!(ErrorKind::NothingLoaded);
-            }
             Ok(result)
         }
     }

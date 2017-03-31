@@ -71,9 +71,13 @@ impl Easy {
             Some(g) => g,
             None => bail!("couldn't find Material.ocg")
         };
-        self.material_map.load(&mut base_group)?;
+        let mut mat_sum = 0;
+        mat_sum += self.material_map.load(&mut base_group)?;
         for mut overloaded_group in &mut overloaded_groups {
-            self.material_map.load(&mut overloaded_group)?;
+            mat_sum += self.material_map.load(&mut overloaded_group)?;
+        }
+        if mat_sum == 0 {
+            bail!(ErrorKind::NothingLoaded);
         }
         base_group.rewind();
         self.texture_map.load_textures(&mut base_group)?;
