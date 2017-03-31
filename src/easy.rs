@@ -53,15 +53,14 @@ impl Easy {
             }
 
             let system_ocg = path.join("System.ocg");
-            if system_ocg.exists() {
-                let system_group = Group::open(system_ocg.to_str().unwrap(), false)?;
-                self.mapgen.load_system(&system_group)?;
-            }
             let objects_ocd = path.join("Objects.ocd");
             if system_ocg.exists() && objects_ocd.exists() {
                 // Done, we found the root.
                 let root_group = Group::open(path.to_str().unwrap(), false)?;
                 self.mapgen.set_root_group(&root_group)?;
+                // Load the top-level System.ocg
+                let system_group = Group::open(system_ocg.to_str().unwrap(), false)?;
+                self.mapgen.load_system(&system_group)?;
                 break;
             }
 
