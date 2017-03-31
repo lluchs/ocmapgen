@@ -21,6 +21,7 @@
 #include "object/C4Def.h"
 #include "script/C4Aul.h"
 #include "lib/StdMeshLoader.h"
+#include "c4group/C4Components.h"
 
 #include "material-handle.h"
 #include "texture-handle.h"
@@ -56,6 +57,19 @@ public:
 	virtual StdMeshSkeleton* GetSkeletonByDefinition(const char* definition) const { return nullptr; }
 };
 
+void ClearScriptEngine()
+{
+	MapScript.Clear();
+	GameScript.Clear();
+	ScriptEngine.Clear();
+}
+
+struct SystemScript {
+	std::string filename, source;
+};
+
+static std::vector<SystemScript> system_scripts;
+
 }
 
 extern "C" {
@@ -72,13 +86,21 @@ void c4_mapgen_handle_init_script_engine()
 {
 	InitCoreFunctionMap(&ScriptEngine);
 	::MapScript.InitFunctionMap(&ScriptEngine);
+
+	// Load System.ocg scripts.
+	for (const auto& script : system_scripts)
+	{
+		// host will be destroyed by script engine, so drop the references
+		C4ScriptHost *scr = new C4ExtraScriptHost();
+		scr->Reg2List(&ScriptEngine);
+		scr->LoadData(script.filename.c_str(), script.source.c_str(), nullptr);
+	}
 }
 
 void c4_mapgen_handle_deinit_script_engine()
 {
-	MapScript.Clear();
-	GameScript.Clear();
-	ScriptEngine.Clear();
+	ClearScriptEngine();
+	system_scripts.clear();
 }
 
 void c4_mapgen_handle_set_map_library(C4GroupHandle* group_handle)
@@ -101,18 +123,39 @@ void c4_mapgen_handle_set_map_library(C4GroupHandle* group_handle)
 	}
 }
 
+void c4_mapgen_handle_load_system(C4GroupHandle* group_handle)
+{
+	auto File = HANDLE_TO_GROUP(group_handle);
+	char fn[_MAX_FNAME+1] = { 0 };
+	File->ResetSearch();
+	while (File->FindNextEntry(C4CFN_ScriptFiles, fn, nullptr, !!fn[0]))
+	{
+		StdStrBuf buf;
+		if (File->LoadEntryString(fn, &buf))
+			system_scripts.push_back(SystemScript {std::string(fn), std::string(buf.getData())});
+	}
+	// Scripts will be loaded on next init.
+}
+
+void c4_mapgen_handle_load_script(const char* filename, const char* source)
+{
+	system_scripts.push_back(SystemScript {std::string(filename), std::string(source)});
+}
+
 C4MapgenHandle* c4_mapgen_handle_new_script(const char* filename, const char* source, C4ScenparHandle* scenpar, C4MaterialMapHandle* material_map, C4TextureMapHandle* texture_map, unsigned int map_width, unsigned int map_height)
 {
 	// Re-initialize script engine. Otherwise, we get a warning when the user
 	// changes the value of a constant, since it is defined already from the
 	// previous map rendering.  Note that we do not need to re-load the map library.
-	c4_mapgen_handle_deinit_script_engine();
+	ClearScriptEngine();
 	c4_mapgen_handle_init_script_engine();
 
-	if (scenpar)
+	if (!scenpar)
 	{
-		scenpar->parameter_defs.RegisterScriptConstants(scenpar->parameters);
+		static C4ScenparHandle default_scenpar;
+		scenpar = &default_scenpar;
 	}
+	scenpar->parameter_defs.RegisterScriptConstants(scenpar->parameters);
 
 	try
 	{
@@ -213,7 +256,7 @@ C4MapgenHandle* c4_mapgen_handle_new(const char* filename, const char* source, c
 			// Re-initialize script engine. Otherwise, we get a warning when the user
 			// changes the value of a constant, since it is defined already from the
 			// previous map rendering.  Note that we do not need to re-load the map library.
-			c4_mapgen_handle_deinit_script_engine();
+			ClearScriptEngine();
 			c4_mapgen_handle_init_script_engine();
 
 			if(script_path == nullptr)

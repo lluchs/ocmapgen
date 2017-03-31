@@ -48,7 +48,7 @@ fn run() -> Result<()> {
              .index(2))
         .get_matches();
 
-    let mut mapgen = Easy::new();
+    let mut mapgen = Easy::new().chain_err(|| "couldn't initialize map generator")?;
     let input_file = Path::new(matches.value_of("INPUT").unwrap())
         .canonicalize()
         .chain_err(|| "couldn't resolve input file path")?;

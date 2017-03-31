@@ -24,11 +24,14 @@ impl MapGen {
     /// Initializes the map generator.
     ///
     /// Note: Will break if you create more than one instance at the same time.
-    pub fn init() -> MapGen {
+    pub fn init() -> Result<MapGen> {
         unsafe {
             c4_mapgen_handle_init_script_engine();
         }
-        MapGen {}
+        let mut mapgen = MapGen {};
+        let compat_source = include_str!("StandaloneCompat.c");
+        mapgen.load_script("StandaloneCompat.c", compat_source)?;
+        Ok(mapgen)
     }
 
     /// Sets root group to look up Library_Map.
@@ -37,6 +40,22 @@ impl MapGen {
         let libraries = Group::open_as_child(&objects, "Libraries.ocd", false, false)?;
         let map = Group::open_as_child(&libraries, "Map.ocd", false, false)?;
         unsafe { c4_mapgen_handle_set_map_library(map.handle()); }
+        Ok(())
+    }
+
+    /// Load a System.ocg group.
+    pub fn load_system(&mut self, group: &Group) -> Result<()> {
+        unsafe { c4_mapgen_handle_load_system(group.handle()); }
+        Ok(())
+    }
+
+    /// Load a script file.
+    pub fn load_script(&mut self, filename: &str, source: &str) -> Result<()> {
+        unsafe {
+            c4_mapgen_handle_load_script(
+                CString::new(filename).unwrap().as_ptr(),
+                CString::new(source).unwrap().as_ptr());
+        }
         Ok(())
     }
 

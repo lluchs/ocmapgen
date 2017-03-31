@@ -18,12 +18,13 @@ impl Easy {
     /// Create and initialize the map generator.
     ///
     /// Note that due to global stage in the generator, there can be only instance at any time.
-    pub fn new() -> Easy {
-        Easy {
-            mapgen: MapGen::init(),
+    pub fn new() -> Result<Easy> {
+        let easy = Easy {
+            mapgen: MapGen::init()?,
             material_map: MaterialMap::new(),
             texture_map: TextureMap::new(),
-        }
+        };
+        Ok(easy)
     }
 
     /// Sets the base path for loading materials and scripts.
@@ -52,12 +53,15 @@ impl Easy {
             }
 
             let system_ocg = path.join("System.ocg");
+            if system_ocg.exists() {
+                let system_group = Group::open(system_ocg.to_str().unwrap(), false)?;
+                self.mapgen.load_system(&system_group)?;
+            }
             let objects_ocd = path.join("Objects.ocd");
             if system_ocg.exists() && objects_ocd.exists() {
                 // Done, we found the root.
                 let root_group = Group::open(path.to_str().unwrap(), false)?;
                 self.mapgen.set_root_group(&root_group)?;
-                // TODO: Load scripts from System.ocg?
                 break;
             }
 

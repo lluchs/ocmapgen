@@ -226,6 +226,15 @@ extern "C" {
     pub fn c4_mapgen_handle_set_map_library(group_handle: *mut C4GroupHandle);
 }
 extern "C" {
+    pub fn c4_mapgen_handle_load_system(group_handle: *mut C4GroupHandle);
+}
+extern "C" {
+    pub fn c4_mapgen_handle_load_script(filename:
+                                            *const ::std::os::raw::c_char,
+                                        source:
+                                            *const ::std::os::raw::c_char);
+}
+extern "C" {
     pub fn c4_mapgen_handle_new_script(filename:
                                            *const ::std::os::raw::c_char,
                                        source: *const ::std::os::raw::c_char,
