@@ -13,6 +13,7 @@ use ocmapgen::easy::{Easy, RenderConfig, load_scenpar};
 use std::path::Path;
 use std::sync::mpsc::channel;
 use std::time::Duration;
+use std::io::prelude::*;
 
 error_chain! { }
 
@@ -131,7 +132,17 @@ fn watch(cfg: &RenderConfig, input_file: &Path, output_file: &str) -> Result<()>
         };
         if rerender {
             println!("File changed, rendering map…");
-            render(cfg, output_file)?;
+            report_error(render(cfg, output_file));
+        }
+    }
+}
+
+fn report_error<T>(res: Result<T>) {
+    match res {
+        Ok(_) => (),
+        Err(ref e) => {
+            write!(&mut std::io::stderr(), "{}", error_chain::ChainedError::display(e))
+                .expect("Error writing to stderr");
         }
     }
 }
