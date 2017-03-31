@@ -34,6 +34,16 @@ fn run() -> Result<()> {
              .help("Height of the output image")
              .takes_value(true)
              .default_value("200"))
+        .arg(Arg::with_name("players")
+             .long("players")
+             .help("Set the result of GetStartupPlayerCount()")
+             .takes_value(true)
+             .default_value("1"))
+        .arg(Arg::with_name("teams")
+             .long("teams")
+             .help("Set the result of GetStartupTeamCount()")
+             .takes_value(true)
+             .default_value("1"))
         .arg(Arg::with_name("watch")
              .long("watch")
              .help("Watch input file for changes")
@@ -63,6 +73,13 @@ fn run() -> Result<()> {
     };
     mapgen.set_base_path(&base_path)
         .chain_err(|| "couldn't find Material.ocg or Objects.ocd")?;
+
+    let players = value_t!(matches.value_of("players"), i32)
+                  .chain_err(|| "invalid --players option")?;
+    let teams = value_t!(matches.value_of("teams"), i32)
+                  .chain_err(|| "invalid --teams option")?;
+    mapgen.mapgen.set_startup_player_count(players);
+    mapgen.mapgen.set_startup_team_count(teams);
 
     let width = value_t!(matches.value_of("width"), u32)
                 .chain_err(|| "invalid width")?;

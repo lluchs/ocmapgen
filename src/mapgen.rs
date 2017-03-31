@@ -59,6 +59,16 @@ impl MapGen {
         Ok(())
     }
 
+    /// Sets the result of GetStartupPlayerCount() in `Map.c`.
+    pub fn set_startup_player_count(&mut self, count: i32) {
+        unsafe { c4_mapgen_handle_set_startup_player_count(count); }
+    }
+
+    /// Sets the result of GetStartupTeamCount() in `Map.c`.
+    pub fn set_startup_team_count(&mut self, count: i32) {
+        unsafe { c4_mapgen_handle_set_startup_team_count(count); }
+    }
+
     pub fn render_landscape(&self, filename: &str, source: &str, script_path: &str, material_map: &MaterialMap, texture_map: &TextureMap, map_width: u32, map_height: u32) -> Result<RgbImage> {
         let mapgen = unsafe {
             MapGenHandle {

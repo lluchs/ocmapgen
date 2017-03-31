@@ -106,6 +106,7 @@ global func EditCursor(...) { FatalError("standalone stub"); }
 global func IsNetwork(...) { FatalError("standalone stub"); }
 global func IsEditor(...) { FatalError("standalone stub"); }
 global func GetLeague(...) { FatalError("standalone stub"); }
+global func GetLeagueScore(...) { FatalError("standalone stub"); }
 global func SetLeagueProgressData(...) { FatalError("standalone stub"); }
 global func GetLeagueProgressData(...) { FatalError("standalone stub"); }
 global func TestMessageBoard(...) { FatalError("standalone stub"); }
@@ -179,6 +180,7 @@ global func GetTeamCount(...) { FatalError("standalone stub"); }
 global func InitScenarioPlayer(...) { FatalError("standalone stub"); }
 global func SetScoreboardData(...) { FatalError("standalone stub"); }
 global func GetScoreboardString(...) { FatalError("standalone stub"); }
+global func GetScoreboardData(...) { FatalError("standalone stub"); }
 global func DoScoreboardShow(...) { FatalError("standalone stub"); }
 global func SortScoreboard(...) { FatalError("standalone stub"); }
 global func AddEvaluationData(...) { FatalError("standalone stub"); }

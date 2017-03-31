@@ -20,6 +20,7 @@
 #include "object/C4DefList.h"
 #include "object/C4Def.h"
 #include "script/C4Aul.h"
+#include "script/C4AulDefFunc.h"
 #include "lib/StdMeshLoader.h"
 #include "c4group/C4Components.h"
 
@@ -70,6 +71,10 @@ struct SystemScript {
 
 static std::vector<SystemScript> system_scripts;
 
+static int32_t startup_player_count = 1, startup_team_count = 1;
+static int32_t FnGetStartupPlayerCount(C4PropList * _this) { return startup_player_count; }
+static int32_t FnGetStartupTeamCount(C4PropList * _this) { return startup_team_count; }
+
 }
 
 extern "C" {
@@ -95,12 +100,21 @@ void c4_mapgen_handle_init_script_engine()
 		scr->Reg2List(&ScriptEngine);
 		scr->LoadData(script.filename.c_str(), script.source.c_str(), nullptr);
 	}
+
+	// Define special script functions.
+	C4PropListStatic * p = ScriptEngine.GetPropList();
+#define F(f) ::AddFunc(p, #f, Fn##f)
+	F(GetStartupPlayerCount);
+	F(GetStartupTeamCount);
+#undef F
 }
 
 void c4_mapgen_handle_deinit_script_engine()
 {
 	ClearScriptEngine();
 	system_scripts.clear();
+	startup_player_count = 1;
+	startup_team_count = 1;
 }
 
 void c4_mapgen_handle_set_map_library(C4GroupHandle* group_handle)
@@ -140,6 +154,16 @@ void c4_mapgen_handle_load_system(C4GroupHandle* group_handle)
 void c4_mapgen_handle_load_script(const char* filename, const char* source)
 {
 	system_scripts.push_back(SystemScript {std::string(filename), std::string(source)});
+}
+
+void c4_mapgen_handle_set_startup_player_count(int32_t count)
+{
+	startup_player_count = count;
+}
+
+void c4_mapgen_handle_set_startup_team_count(int32_t count)
+{
+	startup_team_count = count;
 }
 
 C4MapgenHandle* c4_mapgen_handle_new_script(const char* filename, const char* source, C4ScenparHandle* scenpar, C4MaterialMapHandle* material_map, C4TextureMapHandle* texture_map, unsigned int map_width, unsigned int map_height)

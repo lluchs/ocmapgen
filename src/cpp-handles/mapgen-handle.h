@@ -32,6 +32,8 @@ void c4_mapgen_handle_deinit_script_engine();
 void c4_mapgen_handle_set_map_library(C4GroupHandle* group_handle);
 void c4_mapgen_handle_load_system(C4GroupHandle* group_handle);
 void c4_mapgen_handle_load_script(const char* filename, const char* source);
+void c4_mapgen_handle_set_startup_player_count(int32_t count);
+void c4_mapgen_handle_set_startup_team_count(int32_t count);
 
 C4MapgenHandle* c4_mapgen_handle_new_script(const char* filename, const char* source, C4ScenparHandle* scenpar, C4MaterialMapHandle* material_map, C4TextureMapHandle* texture_map, unsigned int map_width, unsigned int map_height);
 C4MapgenHandle* c4_mapgen_handle_new(const char* filename, const char* source, const char* script_path, C4MaterialMapHandle* material_map, C4TextureMapHandle* texture_map, unsigned int map_width, unsigned int map_height);

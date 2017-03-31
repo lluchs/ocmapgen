@@ -235,6 +235,12 @@ extern "C" {
                                             *const ::std::os::raw::c_char);
 }
 extern "C" {
+    pub fn c4_mapgen_handle_set_startup_player_count(count: i32);
+}
+extern "C" {
+    pub fn c4_mapgen_handle_set_startup_team_count(count: i32);
+}
+extern "C" {
     pub fn c4_mapgen_handle_new_script(filename:
                                            *const ::std::os::raw::c_char,
                                        source: *const ::std::os::raw::c_char,
