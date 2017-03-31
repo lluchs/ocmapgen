@@ -122,15 +122,31 @@ fn run() -> Result<()> {
 
 fn render(cfg: &RenderConfig, output_file: &str, output_file_bg: Option<&str>) -> Result<()> {
     let map_handle = cfg.render().chain_err(|| "map rendering failed")?;
-    map_handle.map_as_image()
-              .save(output_file)
-              .chain_err(|| "writing output image failed")?;
+    // write foreground map...
+    if is_bmp(output_file) {
+        map_handle.save_map(output_file)
+                  .chain_err(|| "writing output image failed")
+    } else {
+        map_handle.map_as_image()
+                  .save(output_file)
+                  .chain_err(|| "writing output image failed")
+    }?;
+    // ...and optionally background map
     if let Some(output_file_bg) = output_file_bg {
-        map_handle.map_bg_as_image()
-                  .save(output_file_bg)
-                  .chain_err(|| "writing bg output image failed")?;
+        if is_bmp(output_file_bg) {
+            map_handle.save_map_bg(output_file_bg)
+                      .chain_err(|| "writing bg output image failed")
+        } else {
+            map_handle.map_bg_as_image()
+                      .save(output_file_bg)
+                      .chain_err(|| "writing bg output image failed")
+        }?;
     }
     Ok(())
+}
+
+fn is_bmp(path: &str) -> bool {
+    path.ends_with(".bmp")
 }
 
 fn watch(cfg: &RenderConfig, input_file: &Path, output_file: &str, output_file_bg: Option<&str>, seed: Option<u32>) -> Result<()> {

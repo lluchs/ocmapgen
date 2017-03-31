@@ -39,8 +39,14 @@ C4MapgenHandle* c4_mapgen_handle_new_script(const char* filename, const char* so
 C4MapgenHandle* c4_mapgen_handle_new(const char* filename, const char* source, const char* script_path, C4MaterialMapHandle* material_map, C4TextureMapHandle* texture_map, unsigned int map_width, unsigned int map_height);
 void c4_mapgen_handle_free(C4MapgenHandle* mapgen);
 
+// Get map as byte array.
 const unsigned char* c4_mapgen_handle_get_map(C4MapgenHandle* mapgen);
 const unsigned char* c4_mapgen_handle_get_bg(C4MapgenHandle* mapgen);
+
+// Save map as bmp.
+bool c4_mapgen_handle_save_map(C4MapgenHandle* mapgen, const char* path, C4MaterialMapHandle* material_map, C4TextureMapHandle* texture_map);
+bool c4_mapgen_handle_save_bg(C4MapgenHandle* mapgen, const char* path, C4MaterialMapHandle* material_map, C4TextureMapHandle* texture_map);
+
 unsigned int c4_mapgen_handle_get_width(C4MapgenHandle* mapgen);
 unsigned int c4_mapgen_handle_get_height(C4MapgenHandle* mapgen);
 unsigned int c4_mapgen_handle_get_rowstride(C4MapgenHandle* mapgen);

@@ -214,6 +214,34 @@ impl<'a> MapGenHandle<'a> {
             }
         }
     }
+
+    /// Saves the map as indexed bmp.
+    pub fn save_map(&self, path: &str) -> Result<()> {
+        unsafe {
+            if !c4_mapgen_handle_save_map(
+                    self.handle,
+                    CString::new(path).unwrap().as_ptr(),
+                    self.material_map.handle(),
+                    self.texture_map.handle()) {
+                bail!("couldn't save map as bmp");
+            }
+        }
+        Ok(())
+    }
+
+    /// Saves the map bg as indexed bmp.
+    pub fn save_map_bg(&self, path: &str) -> Result<()> {
+        unsafe {
+            if !c4_mapgen_handle_save_bg(
+                    self.handle,
+                    CString::new(path).unwrap().as_ptr(),
+                    self.material_map.handle(),
+                    self.texture_map.handle()) {
+                bail!("couldn't save bg map as bmp");
+            }
+        }
+        Ok(())
+    }
 }
 
 impl<'a> Drop for MapGenHandle<'a> {

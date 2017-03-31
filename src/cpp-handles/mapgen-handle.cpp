@@ -16,12 +16,14 @@
 #include "C4Include.h"
 #include "landscape/C4MapScript.h"
 #include "landscape/C4MapCreatorS2.h"
+#include "landscape/C4Texture.h"
 #include "script/C4ScriptHost.h"
 #include "object/C4DefList.h"
 #include "object/C4Def.h"
 #include "script/C4Aul.h"
 #include "script/C4AulDefFunc.h"
 #include "lib/StdMeshLoader.h"
+#include "lib/StdColors.h"
 #include "c4group/C4Components.h"
 
 #include "material-handle.h"
@@ -74,6 +76,13 @@ static std::vector<SystemScript> system_scripts;
 static int32_t startup_player_count = 1, startup_team_count = 1;
 static int32_t FnGetStartupPlayerCount(C4PropList * _this) { return startup_player_count; }
 static int32_t FnGetStartupTeamCount(C4PropList * _this) { return startup_team_count; }
+
+bool SaveMap(CSurface8& map, const char* path, C4MaterialMap& material_map, C4TextureMap& texture_map)
+{
+	CStdPalette Palette;
+	texture_map.StoreMapPalette(&Palette, material_map);
+	return map.Save(path, &Palette);
+}
 
 }
 
@@ -375,6 +384,20 @@ const unsigned char* c4_mapgen_handle_get_map(C4MapgenHandle* mapgen)
 const unsigned char* c4_mapgen_handle_get_bg(C4MapgenHandle* mapgen)
 {
 	return reinterpret_cast<unsigned char*>(mapgen->bg->Bits);
+}
+
+bool c4_mapgen_handle_save_map(C4MapgenHandle* mapgen, const char* path, C4MaterialMapHandle* material_map, C4TextureMapHandle* texture_map)
+{
+	auto matmap = HANDLE_TO_MATERIAL_MAP(material_map);
+	auto texmap = HANDLE_TO_TEXTURE_MAP(texture_map);
+	return SaveMap(*mapgen->fg, path, *matmap, *texmap);
+}
+
+bool c4_mapgen_handle_save_bg(C4MapgenHandle* mapgen, const char* path, C4MaterialMapHandle* material_map, C4TextureMapHandle* texture_map)
+{
+	auto matmap = HANDLE_TO_MATERIAL_MAP(material_map);
+	auto texmap = HANDLE_TO_TEXTURE_MAP(texture_map);
+	return SaveMap(*mapgen->bg, path, *matmap, *texmap);
 }
 
 unsigned int c4_mapgen_handle_get_width(C4MapgenHandle* mapgen)

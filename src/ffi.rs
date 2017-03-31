@@ -273,6 +273,20 @@ extern "C" {
      -> *const ::std::os::raw::c_uchar;
 }
 extern "C" {
+    pub fn c4_mapgen_handle_save_map(mapgen: *mut C4MapgenHandle,
+                                     path: *const ::std::os::raw::c_char,
+                                     material_map: *mut C4MaterialMapHandle,
+                                     texture_map: *mut C4TextureMapHandle)
+     -> bool;
+}
+extern "C" {
+    pub fn c4_mapgen_handle_save_bg(mapgen: *mut C4MapgenHandle,
+                                    path: *const ::std::os::raw::c_char,
+                                    material_map: *mut C4MaterialMapHandle,
+                                    texture_map: *mut C4TextureMapHandle)
+     -> bool;
+}
+extern "C" {
     pub fn c4_mapgen_handle_get_width(mapgen: *mut C4MapgenHandle)
      -> ::std::os::raw::c_uint;
 }
