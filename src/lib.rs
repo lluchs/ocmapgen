@@ -7,6 +7,7 @@ mod group;
 mod mattex;
 mod scenpar;
 mod mapgen;
+mod misc;
 
 /// Used to access handle pointers across modules internally.
 trait Handle<T> {
@@ -18,6 +19,7 @@ pub use group::Group;
 pub use mattex::{MaterialMap, TextureMap};
 pub use scenpar::Scenpar;
 pub use mapgen::MapGen;
+pub use misc::*;
 
 mod errors {
     error_chain! {

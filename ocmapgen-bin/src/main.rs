@@ -9,10 +9,11 @@ extern crate ocmapgen;
 use clap::{Arg, App};
 use notify::{Watcher, RecursiveMode, DebouncedEvent, watcher};
 use ocmapgen::easy::{Easy, RenderConfig, load_scenpar};
+use ocmapgen::{openclonk_version, seed_rng};
 
 use std::path::Path;
 use std::sync::mpsc::channel;
-use std::time::Duration;
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use std::io::prelude::*;
 
 error_chain! { }
@@ -20,10 +21,14 @@ error_chain! { }
 quick_main!(run);
 fn run() -> Result<()> {
     let matches = App::new("ocmapgen")
-        .version(env!("CARGO_PKG_VERSION"))
+        .version(format!("{} with OC {}", env!("CARGO_PKG_VERSION"), openclonk_version()).as_str())
         .arg(Arg::with_name("root")
              .short("r").long("root")
              .help("Base directory. Should be a subdirectory of the OpenClonk “planet” root directory (defaults to directory of input file)")
+             .takes_value(true))
+        .arg(Arg::with_name("seed")
+             .short("s").long("seed")
+             .help("Set a fixed RNG seed value (defaults to a random seed)")
              .takes_value(true))
         .arg(Arg::with_name("width")
              .short("w").long("width")
@@ -75,6 +80,12 @@ fn run() -> Result<()> {
     mapgen.set_base_path(&base_path)
         .chain_err(|| "couldn't find Material.ocg or Objects.ocd")?;
 
+    let seed = value_t!(matches.value_of("seed"), u32)
+               .unwrap_or_else(|_| SystemTime::now().duration_since(UNIX_EPOCH)
+                                   .expect("failed getting a timestamp")
+                                   .subsec_nanos());
+    seed_rng(seed);
+
     let players = value_t!(matches.value_of("players"), i32)
                   .chain_err(|| "invalid --players option")?;
     let teams = value_t!(matches.value_of("teams"), i32)
@@ -98,7 +109,7 @@ fn run() -> Result<()> {
     render(&cfg, output_file)?;
 
     if matches.is_present("watch") {
-        watch(&cfg, &input_file, output_file)?;
+        watch(&cfg, &input_file, output_file, matches.value_of("seed").map(|_| seed))?;
     }
 
     Ok(())
@@ -111,7 +122,7 @@ fn render(cfg: &RenderConfig, output_file: &str) -> Result<()> {
     Ok(())
 }
 
-fn watch(cfg: &RenderConfig, input_file: &Path, output_file: &str) -> Result<()> {
+fn watch(cfg: &RenderConfig, input_file: &Path, output_file: &str, seed: Option<u32>) -> Result<()> {
     let (tx, rx) = channel();
     let mut watcher = watcher(tx, Duration::from_millis(100))
         .chain_err(|| "could not initialize watcher")?;
@@ -132,6 +143,9 @@ fn watch(cfg: &RenderConfig, input_file: &Path, output_file: &str) -> Result<()>
         };
         if rerender {
             println!("File changed, rendering map…");
+            if let Some(seed) = seed {
+                seed_rng(seed);
+            }
             report_error(render(cfg, output_file));
         }
     }
