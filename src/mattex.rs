@@ -214,8 +214,9 @@ fn get_average_color<T>(image: &T) -> u32
                                                          acc.2 + px.data[2] as f64,
                                                          acc.3 + px.data[3] as f64));
     let size: f64 = (image.width() * image.height()) as f64;
-       ((accum.0 / size + 0.5) as u32)
+    // OC color format is 0xaarrggbb
+       ((accum.2 / size + 0.5) as u32)
     | (((accum.1 / size + 0.5) as u32) << 8)
-    | (((accum.2 / size + 0.5) as u32) << 16)
+    | (((accum.0 / size + 0.5) as u32) << 16)
     | (((accum.3 / size + 0.5) as u32) << 24)
 }
