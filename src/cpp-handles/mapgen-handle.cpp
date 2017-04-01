@@ -209,15 +209,15 @@ C4MapgenHandle* c4_mapgen_handle_new_script(const char* filename, const char* so
 		// here:
 		::GameScript.LoadData("Script.c", "", nullptr);
 
-		const char* parse_error = c4_log_handle_get_first_log_message();
-		if(parse_error)
+		const char* parse_error = c4_log_handle_get_log_messages();
+		if(c4_log_handle_has_error() && parse_error)
 			throw std::runtime_error(parse_error);
 
 		// Link script engine (resolve includes/appends, generate code)
 		c4_log_handle_clear();
 		ScriptEngine.Link(&::Definitions);
 		if(c4_log_handle_get_n_log_messages() > 1)
-			throw std::runtime_error(c4_log_handle_get_first_log_message());
+			throw std::runtime_error(c4_log_handle_get_log_messages());
 
 		// Generate map, fail if return error occurs
 		c4_log_handle_clear();
@@ -230,7 +230,7 @@ C4MapgenHandle* c4_mapgen_handle_new_script(const char* filename, const char* so
 			&out_ptr_fg, &out_ptr_bg);
 
 		// Don't show any map if there was a script runtime error
-		const char* runtime_error = c4_log_handle_get_first_log_message();
+		const char* runtime_error = c4_log_handle_get_log_messages();
 		if(runtime_error)
 			throw std::runtime_error(runtime_error);
 
@@ -317,7 +317,7 @@ C4MapgenHandle* c4_mapgen_handle_new(const char* filename, const char* source, c
 			c4_log_handle_clear();
 			GameScript.Load(File, basename, nullptr, nullptr);
 
-			const char* parse_error = c4_log_handle_get_first_log_message();
+			const char* parse_error = c4_log_handle_get_log_messages();
 			if(parse_error)
 				throw std::runtime_error(parse_error);
 
@@ -325,7 +325,7 @@ C4MapgenHandle* c4_mapgen_handle_new(const char* filename, const char* source, c
 			c4_log_handle_clear();
 			ScriptEngine.Link(&::Definitions);
 			if(c4_log_handle_get_n_log_messages() > 1)
-				throw std::runtime_error(c4_log_handle_get_first_log_message());
+				throw std::runtime_error(c4_log_handle_get_log_messages());
 		}
 
 		c4_log_handle_clear();
@@ -334,7 +334,7 @@ C4MapgenHandle* c4_mapgen_handle_new(const char* filename, const char* source, c
 		std::unique_ptr<CSurface8> out_ptr_fg(_out_ptr_fg), out_ptr_bg(_out_ptr_bg);
 
 		// Don't show any map if there was a script runtime error
-		const char* runtime_error = c4_log_handle_get_first_log_message();
+		const char* runtime_error = c4_log_handle_get_log_messages();
 		if(runtime_error)
 		{
 			throw std::runtime_error(runtime_error);

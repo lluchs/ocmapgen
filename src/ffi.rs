@@ -85,11 +85,13 @@ extern "C" {
     pub fn c4_log_handle_clear();
 }
 extern "C" {
-    pub fn c4_log_handle_get_first_log_message()
-     -> *const ::std::os::raw::c_char;
+    pub fn c4_log_handle_get_log_messages() -> *const ::std::os::raw::c_char;
 }
 extern "C" {
     pub fn c4_log_handle_get_n_log_messages() -> ::std::os::raw::c_uint;
+}
+extern "C" {
+    pub fn c4_log_handle_has_error() -> bool;
 }
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]

@@ -16,18 +16,16 @@
 #include "C4Include.h"
 #include "lib/C4Log.h"
 
-// This implements the Log engine function such that the first log message
-// is stored and can be retrieved later by the C API.
-std::string first_log;
+// This implements the Log engine function such that the log messages
+// are stored and can be retrieved later by the C API.
+std::string logs;
 unsigned int n_logs = 0;
 
 bool Log(const char *msg)
 {
-	if(first_log.empty())
-	{
-		assert(n_logs == 0);
-		first_log = msg;
-	}
+	if (!logs.empty())
+		logs.append("\n");
+	logs.append(msg);
 
 	if(*msg != '\0')
 		++n_logs;
@@ -54,19 +52,24 @@ extern "C" {
 
 void c4_log_handle_clear()
 {
-	first_log.clear();
+	logs.clear();
 	n_logs = 0;
 }
 
-const char* c4_log_handle_get_first_log_message()
+const char* c4_log_handle_get_log_messages()
 {
-	if(first_log.empty()) return nullptr;
-	return first_log.c_str();
+	if (logs.empty()) return nullptr;
+	return logs.c_str();
 }
 
 unsigned int c4_log_handle_get_n_log_messages()
 {
 	return n_logs;
+}
+
+bool c4_log_handle_has_error()
+{
+	return logs.find("ERROR:") != std::string::npos;
 }
 
 } // extern "C"

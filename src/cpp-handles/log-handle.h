@@ -23,8 +23,9 @@ extern "C" {
 typedef struct _C4MapgenHandle C4MapgenHandle;
 
 void c4_log_handle_clear();
-const char* c4_log_handle_get_first_log_message();
+const char* c4_log_handle_get_log_messages();
 unsigned int c4_log_handle_get_n_log_messages();
+bool c4_log_handle_has_error();
 
 #ifdef __cplusplus
 }

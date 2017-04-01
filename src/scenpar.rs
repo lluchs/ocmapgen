@@ -25,7 +25,7 @@ impl Scenpar {
                 Ok(())
             } else {
                 bail!("couldn't load scenario parameters: {}",
-                      CStr::from_ptr(c4_log_handle_get_first_log_message())
+                      CStr::from_ptr(c4_log_handle_get_log_messages())
                             .to_string_lossy());
             }
         }
