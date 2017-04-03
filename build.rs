@@ -26,6 +26,9 @@ fn main() {
         // here. Just exclude the file instead.
         let c = Regex::new(r#"(?m)^\s*src/lib/C4SimpleLog\.cpp$"#).unwrap()
             .replace(&c, "#$0");
+        // Don't require native c4group when cross-compiling.
+        let c = Regex::new(r#"(?m)^[^#\n]*IMPORT_NATIVE_TOOLS.*$"#).unwrap()
+            .replace_all(&c, "#$0");
         c.into_owned()
     };
     if cmakelists_patched != cmakelists {
