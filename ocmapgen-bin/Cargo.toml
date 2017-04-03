@@ -1,6 +1,6 @@
 [package]
 name = "ocmapgen-bin"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["Lukas Werling <lukas.werling@gmail.com>"]
 
 [[bin]]
@@ -15,4 +15,4 @@ notify = "4.0"
 
 [dependencies.ocmapgen]
 path = ".."
-version = "0.2"
+version = "0.3"
