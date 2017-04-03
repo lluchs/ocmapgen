@@ -1,6 +1,7 @@
 extern crate image;
 #[macro_use]
 extern crate error_chain;
+extern crate regex;
 
 mod ffi;
 mod group;

@@ -6,6 +6,8 @@ use std::io;
 use std::fs::File;
 use std::path::Path;
 
+use regex::bytes::Regex;
+
 /// Provides an easy-to-use API for rendering mape maps.
 pub struct Easy {
     pub material_map: MaterialMap,
@@ -58,8 +60,7 @@ impl Easy {
                 let root_group = Group::open(path.to_str().unwrap(), false)?;
                 self.mapgen.set_root_group(&root_group)?;
                 // Load the top-level System.ocg
-                let system_group = Group::open(system_ocg.to_str().unwrap(), false)?;
-                self.mapgen.load_system(&system_group)?;
+                self.load_system(&system_ocg)?;
                 break;
             }
 
@@ -92,6 +93,22 @@ impl Easy {
         self.material_map.set_default_textures(&self.texture_map);
 
         Ok(())
+    }
+
+    fn load_system(&mut self, path: &Path) -> Result<()> {
+        let system_group = Group::open(path.to_str().unwrap(), false)?;
+        // Try to load player controls to generate CON_ constants.
+        if let Ok(data) = system_group.load_entry("PlayerControls.txt") {
+            let re = Regex::new(r"(?m)^\s*Identifier=(\w+)").unwrap();
+            let mut script = String::new();
+            for cap in re.captures_iter(&data) {
+                // The regex will only match UTF-8, so from_utf8_lossy won't have to convert
+                // anything. I don't think OC will accept special characters there anyways.
+                script.push_str(&format!("static const CON_{} = 0;\n", String::from_utf8_lossy(&cap[1])));
+            }
+            self.mapgen.load_script("PlayerControlsCompat.c", &script)?;
+        }
+        self.mapgen.load_system(&system_group)
     }
 
     /// Entry point for rendering the map.

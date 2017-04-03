@@ -7,6 +7,7 @@ build = "build.rs"
 [dependencies]
 image = "0.12"
 error-chain = "0.10"
+regex = "0.2"
 
 [build-dependencies]
 gcc = "0.3"
