@@ -1,0 +1,22 @@
+{
+  "name": "ocmapgen-client",
+  "version": "0.3.0",
+  "description": "Library for generating dynamic OpenClonk maps",
+  "main": "ocmapgen.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lluchs/ocmapgen.git"
+  },
+  "author": "Lukas Werling <lukas.werling@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lluchs/ocmapgen/issues"
+  },
+  "homepage": "https://github.com/lluchs/ocmapgen#readme",
+  "dependencies": {
+    "cbor": "^3.0.0"
+  }
+}

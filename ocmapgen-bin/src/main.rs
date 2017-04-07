@@ -5,13 +5,15 @@ extern crate error_chain;
 extern crate image;
 extern crate notify;
 extern crate ocmapgen;
+extern crate ocmapgen_bin;
 
 use clap::{Arg, App};
 use notify::{Watcher, RecursiveMode, DebouncedEvent, watcher};
-use ocmapgen::easy::{Easy, RenderConfig, load_scenpar};
+use ocmapgen::easy::{Easy, RenderConfig, MapType, load_scenpar};
 use ocmapgen::{openclonk_version, seed_rng};
+use ocmapgen_bin::msg;
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::sync::mpsc::channel;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use std::io::prelude::*;
@@ -58,21 +60,34 @@ fn run() -> Result<()> {
              .long("bg")
              .help("Write map background to file")
              .takes_value(true))
+        .arg(Arg::with_name("map-type")
+             .long("map-type")
+             .help("Type of map. Inferred from input file name per default")
+             .takes_value(true)
+             .possible_values(&["Landscape.txt", "Map.c"]))
+        .arg(Arg::with_name("cbor")
+             .long("cbor")
+             .help("Enable cbor interface")
+             .hidden(true) // not useful for human users
+             .takes_value(false))
         .arg(Arg::with_name("INPUT")
              .help("Input file (e.g. Map.c)")
-             .required(true)
+             .required_unless_all(&["cbor", "root", "map-type"])
              .index(1))
         .arg(Arg::with_name("OUTPUT")
              .help("Output file (e.g. Map.png)")
-             .required(true)
+             .required_unless("cbor")
              .index(2))
         .get_matches();
 
     let mut mapgen = Easy::new().chain_err(|| "couldn't initialize map generator")?;
-    let input_file = Path::new(matches.value_of("INPUT").unwrap())
-        .canonicalize()
-        .chain_err(|| "couldn't resolve input file path")?;
-    let output_file = matches.value_of("OUTPUT").unwrap();
+    let input_file = match matches.value_of("INPUT") {
+        Some(f) => Path::new(f)
+                   .canonicalize()
+                   .chain_err(|| "couldn't resolve input file path")?,
+        None => PathBuf::new() // dummy, won't be used
+    };
+    let output_file = matches.value_of("OUTPUT").unwrap_or("");
     let base_path = match matches.value_of("root") {
         Some(p) => p.to_owned(),
         None => {
@@ -106,15 +121,30 @@ fn run() -> Result<()> {
     if let Ok(ref scenpar) = maybe_scenpar {
         cfg.scenpar(scenpar);
     }
-    cfg.filename(input_file.to_str().unwrap())
-       .width(width)
+
+    cfg.width(width)
        .height(height);
 
-    let bg_output = matches.value_of("bg-output");
-    render(&cfg, output_file, bg_output)?;
+    if matches.is_present("INPUT") {
+        cfg.filename(input_file.to_str().unwrap());
+    }
 
-    if matches.is_present("watch") {
-        watch(&cfg, &input_file, output_file, bg_output, matches.value_of("seed").map(|_| seed))?;
+    match matches.value_of("map-type") {
+        Some("Landscape.txt") => { cfg.map_type(MapType::LandscapeTxt); },
+        Some("Map.c")         => { cfg.map_type(MapType::MapC); },
+        _ => () // clap filters invalid values
+    }
+
+    let bg_output = matches.value_of("bg-output");
+
+    if matches.is_present("cbor") {
+        handle_requests(cfg, bg_output, matches.value_of("seed").map(|_| seed))?;
+    } else {
+        render(&cfg, output_file, bg_output)?;
+
+        if matches.is_present("watch") {
+            watch(&cfg, &input_file, output_file, bg_output, matches.value_of("seed").map(|_| seed))?;
+        }
     }
 
     Ok(())
@@ -186,4 +216,42 @@ fn report_error<T>(res: Result<T>) {
                 .expect("Error writing to stderr");
         }
     }
+}
+
+fn handle_requests(mut cfg: RenderConfig, output_file_bg: Option<&str>, seed: Option<u32>) -> Result<()> {
+    loop {
+        let req = msg::read_request().chain_err(|| "couldn't read request")?;
+        let res = match req {
+            msg::Request::RenderMap { source } => {
+                cfg.source(&source);
+                match cfg.render() {
+                    Ok(map_handle) => msg::Response::Image {
+                        fg: to_png(map_handle.map_as_image())?.into(),
+                        bg: match output_file_bg {
+                                Some(_) => Some(to_png(map_handle.map_bg_as_image())?.into()),
+                                None => None,
+                            }
+                    },
+                    Err(err) => msg::Response::Error(error_chain::ChainedError::display(&err).to_string()),
+                }
+            },
+        };
+        msg::write_response(&res).chain_err(|| "couldn't write response")?;
+
+        if let Some(seed) = seed {
+            seed_rng(seed);
+        }
+    }
+}
+
+fn to_png(img: image::RgbImage) -> Result<Vec<u8>> {
+    use image::Pixel;
+
+    let mut result = Vec::new();
+    {
+        let encoder = image::png::PNGEncoder::new(&mut result);
+        encoder.encode(&img, img.width(), img.height(), image::Rgb::<u8>::color_type())
+            .chain_err(|| "PNG encoding failed")?;
+    }
+    Ok(result)
 }
