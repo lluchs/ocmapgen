@@ -208,7 +208,6 @@ impl<'a> MapGenHandle<'a> {
                                     ((color >> 8) & 0xff) as u8,
                                     (color & 0xff) as u8] }
             } else {
-                println!("no texture name for {}", mat_idx);
                 // This really shouldn't happen and I think mape doesn't even handle this case.
                 SKY
             }
