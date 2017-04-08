@@ -56,7 +56,8 @@ class MapGen {
 
 		// Only the resPromise resolves to something.
 		this.request = Promise.race([resPromise, timeoutPromise, this.exitPromise])
-		let [type, arg] = await this.request
+		let response = await this.request
+		let [type, arg] = response
 		switch (type) {
 		case 'Image':
 			this.request = null
@@ -64,7 +65,7 @@ class MapGen {
 		case 'Error':
 			throw new Error(arg)
 		default:
-			throw new Error(`unexpected message: ${type}`)
+			throw new Error(`unexpected message: ${response}`)
 		}
 	}
 
@@ -85,6 +86,9 @@ class MapGen {
 		this.process = spawn(this.options.cmd, args, {
 			stdio: ['pipe', 'pipe', process.stderr],
 		})
+
+		// Avoid errors on pipe when the process is killed.
+		this.process.stdin.on('error', () => {})
 
 		this.exitPromise = new Promise((resolve, reject) => {
 			this.process.on('close', (code) => {

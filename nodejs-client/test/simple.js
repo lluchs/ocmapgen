@@ -177,16 +177,110 @@ public func GetLavaShape(proplist map, proplist granite, int ground_bottom)
 }
 `
 
-test('Acid Gold Mine', async t => {
+let shiverPeak = `
+/*-- ShiverPeak --*/
+
+// A peak formed mountain, with lots of materials.
+map ShiverPeak
+{
+	overlay {
+		algo=poly; mask=1;
+		point { x=18%; y=100%; };
+		point { x=82%; y=100%; };
+		point { x=74%; y=41%; };
+		point { x=50%; y=0%; };
+		point { x=26%; y=41%; };
+		overlay {
+			algo=border; mat=Ice; invert=1; a=7; b=7; turbulence=100;
+			overlay {algo=rndchecker; turbulence=100; mat=Earth; tex=earth_root;};
+			overlay { algo=rndchecker; a=5; zoomX=-30; zoomY=-30; turbulence=100; mat=Ore; };
+			overlay { algo=rndchecker; a=2; zoomX=30; zoomY=30; turbulence=100; mat=Granite; };
+			overlay { algo=rndchecker; a=19; zoomX=-30; zoomY=-30; turbulence=100; mat=Gold; };
+			overlay {
+				algo=rndchecker; turbulence=190; a=2; invert=1; mask=1;
+				overlay {algo=rndchecker; mat=Rock; a=2; turbulence=100;};
+				overlay {
+					algo=border; a=10; b=10; invert=1; turbulence=100; mask=1;
+					overlay { algo=rndchecker; a=3; zoomX=-50; zoomY=-50; turbulence=100; mat=Granite; };
+					overlay { algo=rndchecker; a=6; zoomX=-20; zoomY=-20; turbulence=100; mat=Gold; }
+					| overlay { algo=rndchecker; a=8; zoomX=10; zoomY=10; turbulence=100; mat=Gold; };
+           			 overlay { algo=rndchecker; a=4; zoomX=-40; zoomY=-40; turbulence=100; mat=Firestone; }
+					| overlay { algo=rndchecker; a=4; zoomX=-40; zoomY=-40; turbulence=100; mat=Firestone; };
+					overlay { algo=rndchecker; a=3; zoomX=30; zoomY=30; turbulence=100; mat=Earth; tex=earth_spongy;};
+					overlay {
+						algo=rndchecker; a=2; zoomX=50; zoomY=50; turbulence=100; mat=Tunnel;
+						overlay {algo=border; b=1; mat=Rock; turbulence=2;};
+					}
+   					| overlay {
+						algo=rndchecker; a=1; zoomX=50; zoomY=50; turbulence=100; mat=Tunnel;
+						overlay {algo=border; b=1; mat=Rock; turbulence=2;};
+					};
+				};
+				overlay {algo=border; invert=1; turbulence=80; a=4; b=4;}
+				& overlay {
+					algo=lines; a=22; b=24; rotate = 90; mask=1;
+					overlay { 
+						algo=border; invert=1; a=2; b=2; turbulence=20; mask=1;
+						overlay {
+							algo=solid; mask=1;
+							overlay {
+								algo=solid; wdt=45; hgt=90; mask=1;
+								overlay {algo=border; mat=Tunnel; invert=1; a=2; b=1; turbulence=60; };
+							};
+							overlay {
+								algo=solid; x=55; hgt=90; mask=1;
+								overlay {algo=border; mat=Tunnel; invert=1; a=2; b=1; turbulence=60;};
+							};
+						}; 
+					};
+				};
+			};
+			overlay {
+				x=37; wdt=26; y=86; hgt=12; mask=1; 
+				overlay {algo=border; invert=1; a=2; b=2; turbulence=100; mat=Tunnel;};
+			};
+		};
+	};
+};
+`
+
+test('Acid Gold Mine (Map.c)', async t => {
 	let mapgen = t.context.mapgen = new MapGen({
 		root: __dirname + '/../../openclonk/planet',
 		map_type: 'Map.c',
 		timeout: 5000,
 	})
 
-	let {fg} = await mapgen.generate(acidGoldMine)
+	let {fg, bg} = await mapgen.generate(acidGoldMine)
 	t.is(fg.toString('ascii', 1, 4), 'PNG')
+	t.is(bg, null)
 })
+
+test('Acid Gold Mine with bg', async t => {
+	let mapgen = t.context.mapgen = new MapGen({
+		root: __dirname + '/../../openclonk/planet',
+		map_type: 'Map.c',
+		bg: true,
+		timeout: 5000,
+	})
+
+	let {fg, bg} = await mapgen.generate(acidGoldMine)
+	t.is(fg.toString('ascii', 1, 4), 'PNG')
+	t.is(bg.toString('ascii', 1, 4), 'PNG')
+})
+
+test('Shiver Peak (Landscape.txt)', async t => {
+	let mapgen = t.context.mapgen = new MapGen({
+		root: __dirname + '/../../openclonk/planet',
+		map_type: 'Landscape.txt',
+		timeout: 5000,
+	})
+
+	let {fg, bg} = await mapgen.generate(shiverPeak)
+	t.is(fg.toString('ascii', 1, 4), 'PNG')
+	t.is(bg, null)
+})
+
 
 test('Timeout', async t => {
 	let mapgen = t.context.mapgen = new MapGen({
@@ -194,7 +288,7 @@ test('Timeout', async t => {
 		map_type: 'Map.c',
 		// AVA runs the tests in parallel and if this number is too low, the
 		// test runner breaks (?!)
-		timeout: 700,
+		timeout: 100,
 	})
 
 	let infiniteLoop = `
