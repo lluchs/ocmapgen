@@ -1,6 +1,7 @@
+const test = require('ava')
 const {MapGen} = require('../ocmapgen')
 
-let source = `
+let acidGoldMine = `
 /**
 	Acid Gold Mine
 	An acid lake with a cliff leading to a volcanic gold mine.
@@ -176,18 +177,37 @@ public func GetLavaShape(proplist map, proplist granite, int ground_bottom)
 }
 `
 
-let mapgen = new MapGen({
-	root: __dirname + '/../../openclonk/planet',
-	map_type: 'Map.c',
-	timeout: 5000,
+test('Acid Gold Mine', async t => {
+	let mapgen = t.context.mapgen = new MapGen({
+		root: __dirname + '/../../openclonk/planet',
+		map_type: 'Map.c',
+		timeout: 5000,
+	})
+
+	let {fg} = await mapgen.generate(acidGoldMine)
+	t.is(fg.toString('ascii', 1, 4), 'PNG')
 })
 
-mapgen.generate(source)
-	.then(({fg}) => {
-		console.log("success!", fg.toString('ascii', 1, 4))
-		mapgen.end()
+test('Timeout', async t => {
+	let mapgen = t.context.mapgen = new MapGen({
+		root: __dirname + '/../../openclonk/planet',
+		map_type: 'Map.c',
+		// AVA runs the tests in parallel and if this number is too low, the
+		// test runner breaks (?!)
+		timeout: 700,
 	})
-	.catch((err) => {
-		console.log(err)
-		mapgen.end()
-	})
+
+	let infiniteLoop = `
+protected func InitializeMap(proplist map)
+{
+	while (true) { }
+}
+	`
+
+	const error = await t.throws(mapgen.generate(infiniteLoop))
+	t.is(error.message, 'timeout passed')
+})
+
+test.afterEach(t => {
+	t.context.mapgen.end()
+})
