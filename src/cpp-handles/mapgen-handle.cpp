@@ -60,6 +60,47 @@ public:
 	virtual StdMeshSkeleton* GetSkeletonByDefinition(const char* definition) const { return nullptr; }
 };
 
+// Script error handler which just records all messages.
+class ErrorHandler: public C4AulErrorHandler
+{
+public:
+	std::string msgs;
+	int errCnt = 0, warnCnt = 0;
+
+	ErrorHandler()
+	{
+		::ScriptEngine.RegisterErrorHandler(this);
+	}
+
+	virtual ~ErrorHandler()
+	{
+		::ScriptEngine.UnregisterErrorHandler(this);
+	}
+
+	// Throws an std::runtime_error with the error messages if any errors
+	// occured.
+	void CheckErrors()
+	{
+		if (errCnt > 0)
+			throw std::runtime_error(msgs);
+	}
+
+	void OnError(const char *msg) override
+	{
+		msgs += "ERROR: ";
+		msgs += msg;
+		msgs += '\n';
+		++errCnt;
+	}
+	void OnWarning(const char *msg) override
+	{
+		msgs += "WARNING: ";
+		msgs += msg;
+		msgs += '\n';
+		++warnCnt;
+	}
+};
+
 void ClearScriptEngine()
 {
 	MapScript.Clear();
@@ -201,7 +242,7 @@ C4MapgenHandle* c4_mapgen_handle_new_script(const char* filename, const char* so
 		landscape.MapHgt.Set(map_height, 0, map_height, map_height);
 		landscape.MapPlayerExtend = 0;
 
-		c4_log_handle_clear();
+		ErrorHandler error_handler;
 		::MapScript.LoadData(filename, source, nullptr);
 		// If InitializeMap() returns false, the map creator wants to
 		// call a fallback in the scenario script. This crashes if no
@@ -209,15 +250,11 @@ C4MapgenHandle* c4_mapgen_handle_new_script(const char* filename, const char* so
 		// here:
 		::GameScript.LoadData("Script.c", "", nullptr);
 
-		const char* parse_error = c4_log_handle_get_log_messages();
-		if(c4_log_handle_has_error() && parse_error)
-			throw std::runtime_error(parse_error);
+		error_handler.CheckErrors();
 
 		// Link script engine (resolve includes/appends, generate code)
-		c4_log_handle_clear();
 		ScriptEngine.Link(&::Definitions);
-		if(c4_log_handle_get_n_log_messages() > 1)
-			throw std::runtime_error(c4_log_handle_get_log_messages());
+		error_handler.CheckErrors();
 
 		// Generate map, fail if return error occurs
 		c4_log_handle_clear();
@@ -230,9 +267,7 @@ C4MapgenHandle* c4_mapgen_handle_new_script(const char* filename, const char* so
 			&out_ptr_fg, &out_ptr_bg);
 
 		// Don't show any map if there was a script runtime error
-		const char* runtime_error = c4_log_handle_get_log_messages();
-		if(runtime_error)
-			throw std::runtime_error(runtime_error);
+		error_handler.CheckErrors();
 
 		if(!result)
 			throw std::runtime_error("No InitializeMap() function present in the script, or it returns false");
@@ -285,6 +320,7 @@ C4MapgenHandle* c4_mapgen_handle_new(const char* filename, const char* source, c
 
 		// Setup the script engine if there is an algo=script overlay in the
 		// Landscape.txt file
+		ErrorHandler error_handler;
 		if(HasAlgoScript(mapgen.GetMap(nullptr)))
 		{
 			// Re-initialize script engine. Otherwise, we get a warning when the user
@@ -314,18 +350,13 @@ C4MapgenHandle* c4_mapgen_handle_new(const char* filename, const char* source, c
 				throw std::runtime_error(error_msg.getData());
 			}
 
-			c4_log_handle_clear();
 			GameScript.Load(File, basename, nullptr, nullptr);
 
-			const char* parse_error = c4_log_handle_get_log_messages();
-			if(parse_error)
-				throw std::runtime_error(parse_error);
+			error_handler.CheckErrors();
 
 			// Link script engine (resolve includes/appends, generate code)
-			c4_log_handle_clear();
 			ScriptEngine.Link(&::Definitions);
-			if(c4_log_handle_get_n_log_messages() > 1)
-				throw std::runtime_error(c4_log_handle_get_log_messages());
+			error_handler.CheckErrors();
 		}
 
 		c4_log_handle_clear();
@@ -334,11 +365,7 @@ C4MapgenHandle* c4_mapgen_handle_new(const char* filename, const char* source, c
 		std::unique_ptr<CSurface8> out_ptr_fg(_out_ptr_fg), out_ptr_bg(_out_ptr_bg);
 
 		// Don't show any map if there was a script runtime error
-		const char* runtime_error = c4_log_handle_get_log_messages();
-		if(runtime_error)
-		{
-			throw std::runtime_error(runtime_error);
-		}
+		error_handler.CheckErrors();
 
 		C4MapgenHandle* handle = new C4MapgenHandle;
 		handle->width = out_ptr_fg->Wdt;
