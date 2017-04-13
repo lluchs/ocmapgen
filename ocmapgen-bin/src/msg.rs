@@ -11,7 +11,12 @@ pub enum Request {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum Response {
-    Image { fg: ByteBuf, bg: Option<ByteBuf> },
+    Image {
+        fg: ByteBuf,
+        bg: Option<ByteBuf>,
+        warnings: Option<String>,
+        script_output: Option<String>,
+    },
     Error(String),
 }
 

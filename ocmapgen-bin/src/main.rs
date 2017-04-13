@@ -236,7 +236,9 @@ fn handle_requests(mut cfg: RenderConfig, output_file_bg: Option<&str>, seed: Op
                         bg: match output_file_bg {
                                 Some(_) => Some(to_png(map_handle.map_bg_as_image())?.into()),
                                 None => None,
-                            }
+                            },
+                        warnings: map_handle.warnings(),
+                        script_output: map_handle.script_output(),
                     },
                     Err(err) => msg::Response::Error(error_chain::ChainedError::display(&err).to_string()),
                 }

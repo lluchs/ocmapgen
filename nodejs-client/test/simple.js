@@ -244,24 +244,24 @@ map ShiverPeak
 };
 `
 
-test('Acid Gold Mine (Map.c)', async t => {
-	let mapgen = t.context.mapgen = new MapGen({
+function createMapGen(opts = {}) {
+	return new MapGen(Object.assign({
 		root: __dirname + '/../../openclonk/planet',
 		map_type: 'Map.c',
 		timeout: 5000,
-	})
+	}, opts))
+}
 
+test('Acid Gold Mine (Map.c)', async t => {
+	let mapgen = t.context.mapgen = createMapGen();
 	let {fg, bg} = await mapgen.generate(acidGoldMine)
 	t.is(fg.toString('ascii', 1, 4), 'PNG')
 	t.is(bg, null)
 })
 
 test('Acid Gold Mine with bg', async t => {
-	let mapgen = t.context.mapgen = new MapGen({
-		root: __dirname + '/../../openclonk/planet',
-		map_type: 'Map.c',
+	let mapgen = t.context.mapgen = createMapGen({
 		bg: true,
-		timeout: 5000,
 	})
 
 	let {fg, bg} = await mapgen.generate(acidGoldMine)
@@ -270,10 +270,8 @@ test('Acid Gold Mine with bg', async t => {
 })
 
 test('Shiver Peak (Landscape.txt)', async t => {
-	let mapgen = t.context.mapgen = new MapGen({
-		root: __dirname + '/../../openclonk/planet',
+	let mapgen = t.context.mapgen = createMapGen({
 		map_type: 'Landscape.txt',
-		timeout: 5000,
 	})
 
 	let {fg, bg} = await mapgen.generate(shiverPeak)
@@ -283,11 +281,7 @@ test('Shiver Peak (Landscape.txt)', async t => {
 
 
 test('Timeout', async t => {
-	let mapgen = t.context.mapgen = new MapGen({
-		root: __dirname + '/../../openclonk/planet',
-		map_type: 'Map.c',
-		// AVA runs the tests in parallel and if this number is too low, the
-		// test runner breaks (?!)
+	let mapgen = t.context.mapgen = createMapGen({
 		timeout: 100,
 	})
 
@@ -300,6 +294,34 @@ protected func InitializeMap(proplist map)
 
 	const error = await t.throws(mapgen.generate(infiniteLoop))
 	t.is(error.message, 'timeout passed')
+})
+
+test('Warnings', async t => {
+	let mapgen = t.context.mapgen = createMapGen()
+	let script = `
+protected func InitializeMap(proplist map)
+{
+	var foo = "\\p";
+	return true;
+}
+	`
+
+	let {warnings} = await mapgen.generate(script)
+	t.regex(warnings, /^WARNING: unknown escape sequence/)
+})
+
+test('Script output', async t => {
+	let mapgen = t.context.mapgen = createMapGen()
+	let script = `
+protected func InitializeMap(proplist map)
+{
+	Log("foobar");
+	return true;
+}
+	`
+
+	let {script_output} = await mapgen.generate(script)
+	t.is(script_output, 'foobar');
 })
 
 test.afterEach(t => {
