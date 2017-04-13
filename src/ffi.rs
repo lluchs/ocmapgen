@@ -305,6 +305,14 @@ extern "C" {
      -> *const ::std::os::raw::c_char;
 }
 extern "C" {
+    pub fn c4_mapgen_handle_get_warnings(mapgen: *mut C4MapgenHandle)
+     -> *const ::std::os::raw::c_char;
+}
+extern "C" {
+    pub fn c4_mapgen_handle_get_script_output(mapgen: *mut C4MapgenHandle)
+     -> *const ::std::os::raw::c_char;
+}
+extern "C" {
     pub fn c4_random_handle_seed(seed: ::std::os::raw::c_uint);
 }
 extern "C" {

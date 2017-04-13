@@ -51,6 +51,8 @@ unsigned int c4_mapgen_handle_get_width(C4MapgenHandle* mapgen);
 unsigned int c4_mapgen_handle_get_height(C4MapgenHandle* mapgen);
 unsigned int c4_mapgen_handle_get_rowstride(C4MapgenHandle* mapgen);
 const char* c4_mapgen_handle_get_error(C4MapgenHandle* mapgen);
+const char* c4_mapgen_handle_get_warnings(C4MapgenHandle* mapgen);
+const char* c4_mapgen_handle_get_script_output(C4MapgenHandle* mapgen);
 
 #ifdef __cplusplus
 }

@@ -150,6 +150,22 @@ impl<'a> MapGenHandle<'a> {
         }
     }
 
+    /// Returns script warnings from parsing/linking/execution.
+    pub fn warnings(&self) -> Option<String> {
+        unsafe {
+            let messages = c4_mapgen_handle_get_warnings(self.handle);
+            char_to_maybe_string(messages)
+        }
+    }
+
+    /// Returns script output (`Log()` function and friends) from executing the map script.
+    pub fn script_output(&self) -> Option<String> {
+        unsafe {
+            let messages = c4_mapgen_handle_get_script_output(self.handle);
+            char_to_maybe_string(messages)
+        }
+    }
+
     /// Returns the foreground map as image.
     pub fn map_as_image(&self) -> RgbImage {
         let width = self.width();
@@ -240,6 +256,14 @@ impl<'a> MapGenHandle<'a> {
             }
         }
         Ok(())
+    }
+}
+
+unsafe fn char_to_maybe_string(string: *const ::std::os::raw::c_char) -> Option<String> {
+    if string.is_null() {
+        None
+    } else {
+        Some(CStr::from_ptr(string).to_string_lossy().into_owned())
     }
 }
 

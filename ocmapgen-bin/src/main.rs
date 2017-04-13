@@ -172,6 +172,12 @@ fn render(cfg: &RenderConfig, output_file: &str, output_file_bg: Option<&str>) -
                       .chain_err(|| "writing bg output image failed")
         }?;
     }
+    if let Some(warnings) = map_handle.warnings() {
+        println!("{}", warnings);
+    }
+    if let Some(script_output) = map_handle.script_output() {
+        println!("{}", script_output);
+    }
     Ok(())
 }
 
