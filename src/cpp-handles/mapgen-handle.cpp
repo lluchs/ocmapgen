@@ -72,11 +72,6 @@ public:
 		::ScriptEngine.RegisterErrorHandler(this);
 	}
 
-	virtual ~ErrorHandler()
-	{
-		::ScriptEngine.UnregisterErrorHandler(this);
-	}
-
 	// Throws an std::runtime_error with the error messages if any errors
 	// occured.
 	void CheckErrors()
