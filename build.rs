@@ -10,24 +10,26 @@ fn main() {
     let cmakelists = read_file("openclonk/CMakeLists.txt").unwrap();
     // We need to patch the openclonk CMakeLists.txt slightly to make the build work.
     let cmakelists_patched = {
+        macro_rules! comment_out {
+            ($text:ident, $regex:literal) => {
+                let $text = Regex::new($regex).unwrap()
+                    .replace_all(&$text, "#$0");
+            };
+        }
         // Don't search for audio libraries to avoid having to specify the audio include path for
         // the glue code.
-        let c = Regex::new(r#"(?m)^find_package\("Audio"\)$"#).unwrap()
-            .replace(&cmakelists, "#$0");
+        comment_out!(cmakelists, r#"(?m)^\s*find_package\("Audio"\)$"#);
         // Image libraries aren't required, so remove that dependency.
-        let c = Regex::new(r#"(?m)^find_package\((JPEG|PNG) REQUIRED\)$"#).unwrap()
-            .replace_all(&c, "#$0");
+        comment_out!(cmakelists, r#"(?m)^\s*find_package\((JPEG|PNG) REQUIRED\)$"#);
+        comment_out!(cmakelists, r#"(?m)^\s*\$\{(JPEG|PNG)_INCLUDE_DIR\}$"#);
         // Mape's Log* symbols somehow override the ones in libmisc, but I can't get it to work
         // here. Just exclude the file instead.
-        let c = Regex::new(r#"(?m)^\s*src/lib/C4SimpleLog\.cpp$"#).unwrap()
-            .replace(&c, "#$0");
+        comment_out!(cmakelists, r#"(?m)^\s*src/lib/C4SimpleLog\.cpp$"#);
         // Don't require native c4group when cross-compiling.
-        let c = Regex::new(r#"(?m)^[^#\n]*IMPORT_NATIVE_TOOLS.*$"#).unwrap()
-            .replace_all(&c, "#$0");
+        comment_out!(cmakelists, r#"(?m)^[^#\n]*IMPORT_NATIVE_TOOLS.*$"#);
         // We cannot compile with LTO enabled when linking with Rust.
-        let c = Regex::new(r#"(?m)^\s*set\(CMAKE_INTERPROCEDURAL_OPTIMIZATION_.*$"#).unwrap()
-            .replace_all(&c, "#$0");
-        c.into_owned()
+        comment_out!(cmakelists, r#"(?m)^\s*set\(CMAKE_INTERPROCEDURAL_OPTIMIZATION_.*$"#);
+        cmakelists.into_owned()
     };
     if cmakelists_patched != cmakelists {
         write_file("openclonk/CMakeLists.txt", &cmakelists_patched).unwrap();
