@@ -19,6 +19,7 @@ global func FindObject(...) { FatalError("standalone stub"); }
 global func FindObjects(...) { FatalError("standalone stub"); }
 global func InsertMaterial(...) { FatalError("standalone stub"); }
 global func CanInsertMaterial(...) { FatalError("standalone stub"); }
+global func ExecutePXS(...) { FatalError("standalone stub"); }
 global func GetMaterialCount(...) { FatalError("standalone stub"); }
 global func GetMaterial(...) { FatalError("standalone stub"); }
 global func GetBackMaterial(...) { FatalError("standalone stub"); }
@@ -39,7 +40,7 @@ global func Music(...) { FatalError("standalone stub"); }
 global func MusicLevel(...) { FatalError("standalone stub"); }
 global func SetPlayList(...) { FatalError("standalone stub"); }
 global func GameOver(...) { FatalError("standalone stub"); }
-global func GainMissionAccess(...) { FatalError("standalone stub"); }
+global func GainScenarioAccess(...) { FatalError("standalone stub"); }
 global func PlayerMessage(...) { FatalError("standalone stub"); }
 global func Message(...) { FatalError("standalone stub"); }
 global func AddMessage(...) { FatalError("standalone stub"); }
@@ -114,7 +115,7 @@ global func CallMessageBoard(...) { FatalError("standalone stub"); }
 global func AbortMessageBoard(...) { FatalError("standalone stub"); }
 global func SetFoW(...) { FatalError("standalone stub"); }
 global func SetMaxPlayer(...) { FatalError("standalone stub"); }
-global func GetMissionAccess(...) { FatalError("standalone stub"); }
+global func GetScenarioAccess(...) { FatalError("standalone stub"); }
 global func GetDefCoreVal(...) { FatalError("standalone stub"); }
 global func GetObjectVal(...) { FatalError("standalone stub"); }
 global func GetObjectInfoCoreVal(...) { FatalError("standalone stub"); }
@@ -191,7 +192,7 @@ global func GuiUpdateTag(...) { FatalError("standalone stub"); }
 global func GuiClose(...) { FatalError("standalone stub"); }
 global func GuiUpdate(...) { FatalError("standalone stub"); }
 global func PauseGame(...) { FatalError("standalone stub"); }
-global func SetNextMission(...) { FatalError("standalone stub"); }
+global func SetNextScenario(...) { FatalError("standalone stub"); }
 global func GetPlayerControlState(...) { FatalError("standalone stub"); }
 global func SetPlayerControlEnabled(...) { FatalError("standalone stub"); }
 global func GetPlayerControlEnabled(...) { FatalError("standalone stub"); }
@@ -200,6 +201,7 @@ global func PlayRumble(...) { FatalError("standalone stub"); }
 global func StopRumble(...) { FatalError("standalone stub"); }
 global func GainScenarioAchievement(...) { FatalError("standalone stub"); }
 global func GetPXSCount(...) { FatalError("standalone stub"); }
+global func GetTranslatedString(...) { FatalError("standalone stub"); }
 global func ChangeDef(...) { FatalError("standalone stub"); }
 global func SetSolidMask(...) { FatalError("standalone stub"); }
 global func SetHalfVehicleSolidMask(...) { FatalError("standalone stub"); }
@@ -228,7 +230,6 @@ global func SetRDir(...) { FatalError("standalone stub"); }
 global func SetYDir(...) { FatalError("standalone stub"); }
 global func SetR(...) { FatalError("standalone stub"); }
 global func SetAction(...) { FatalError("standalone stub"); }
-global func SetBridgeActionData(...) { FatalError("standalone stub"); }
 global func SetActionData(...) { FatalError("standalone stub"); }
 global func SetComDir(...) { FatalError("standalone stub"); }
 global func SetDir(...) { FatalError("standalone stub"); }
@@ -393,6 +394,7 @@ static const C4FO_Layer = 0;
 static const C4FO_InArray = 0;
 static const C4FO_Property = 0;
 static const C4FO_AnyLayer = 0;
+static const C4FO_Cone = 0;
 static const MD_DragSource = 0;
 static const MD_DropTarget = 0;
 static const MD_NoClick = 0;
@@ -511,7 +513,6 @@ static const OCF_HitSpeed2 = 0;
 static const OCF_HitSpeed3 = 0;
 static const OCF_Collection = 0;
 static const OCF_HitSpeed4 = 0;
-static const OCF_AttractLightning = 0;
 static const OCF_NotContained = 0;
 static const OCF_CrewMember = 0;
 static const OCF_InLiquid = 0;
