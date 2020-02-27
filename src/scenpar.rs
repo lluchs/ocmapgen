@@ -1,9 +1,10 @@
-use ffi::*;
-use errors::*;
-use super::Handle;
-use group::Group;
+use crate::ffi::*;
+use crate::errors::*;
+use crate::Handle;
+use crate::group::Group;
 
 use std::ffi::{CStr, CString};
+use error_chain::bail;
 
 pub struct Scenpar {
     handle: *mut C4ScenparHandle,

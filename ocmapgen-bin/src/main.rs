@@ -1,13 +1,5 @@
-#[macro_use]
-extern crate clap;
-#[macro_use]
-extern crate error_chain;
-extern crate image;
-extern crate notify;
-extern crate ocmapgen;
-extern crate ocmapgen_bin;
-
-use clap::{Arg, App};
+use clap::{Arg, App, value_t};
+use error_chain::{error_chain, quick_main};
 use notify::{Watcher, RecursiveMode, DebouncedEvent, watcher};
 use ocmapgen::easy::{Easy, RenderConfig, MapType, load_scenpar};
 use ocmapgen::{openclonk_version, seed_rng};
@@ -218,7 +210,7 @@ fn report_error<T>(res: Result<T>) {
     match res {
         Ok(_) => (),
         Err(ref e) => {
-            write!(&mut std::io::stderr(), "{}", error_chain::ChainedError::display(e))
+            write!(&mut std::io::stderr(), "{}", e)
                 .expect("Error writing to stderr");
         }
     }
@@ -240,7 +232,7 @@ fn handle_requests(mut cfg: RenderConfig, output_file_bg: Option<&str>, seed: Op
                         warnings: map_handle.warnings(),
                         script_output: map_handle.script_output(),
                     },
-                    Err(err) => msg::Response::Error(error_chain::ChainedError::display(&err).to_string()),
+                    Err(err) => msg::Response::Error(format!("{}", err)),
                 }
             },
         };
@@ -258,7 +250,7 @@ fn to_png(img: image::RgbImage) -> Result<Vec<u8>> {
     let mut result = Vec::new();
     {
         let encoder = image::png::PNGEncoder::new(&mut result);
-        encoder.encode(&img, img.width(), img.height(), image::Rgb::<u8>::color_type())
+        encoder.encode(&img, img.width(), img.height(), image::Rgb::<u8>::COLOR_TYPE)
             .chain_err(|| "PNG encoding failed")?;
     }
     Ok(result)

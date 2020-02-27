@@ -1,11 +1,12 @@
-use super::{Group, MaterialMap, TextureMap, Scenpar, MapGen, MapGenHandle};
-use super::errors::*;
+use crate::{Group, MaterialMap, TextureMap, Scenpar, MapGen, MapGenHandle};
+use crate::errors::*;
 
 use std::io::prelude::*;
 use std::io;
 use std::fs::File;
 use std::path::Path;
 
+use error_chain::bail;
 use regex::bytes::Regex;
 
 /// Provides an easy-to-use API for rendering mape maps.

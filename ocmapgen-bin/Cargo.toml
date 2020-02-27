@@ -2,6 +2,7 @@
 name = "ocmapgen-bin"
 version = "0.4.0"
 authors = ["Lukas Werling <lukas.werling@gmail.com>"]
+edition = "2018"
 
 [[bin]]
 name = "ocmapgen"
@@ -9,8 +10,8 @@ path = "src/main.rs"
 
 [dependencies]
 clap = "2.22"
-image = "0.12"
-error-chain = "0.10"
+image = "0.23"
+error-chain = "0.12"
 notify = "4.0"
 
 # For stdin/stdout control

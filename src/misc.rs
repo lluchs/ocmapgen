@@ -1,4 +1,4 @@
-use ffi::*;
+use crate::ffi::*;
 use std::ffi::CStr;
 
 /// Seeds the RNG used for map generation.

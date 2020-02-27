@@ -1,8 +1,3 @@
-extern crate cmake;
-extern crate gcc;
-extern crate regex;
-extern crate glob;
-
 use glob::glob;
 use regex::Regex;
 use std::collections::HashMap;
@@ -29,6 +24,9 @@ fn main() {
         // Don't require native c4group when cross-compiling.
         let c = Regex::new(r#"(?m)^[^#\n]*IMPORT_NATIVE_TOOLS.*$"#).unwrap()
             .replace_all(&c, "#$0");
+        // We cannot compile with LTO enabled when linking with Rust.
+        let c = Regex::new(r#"(?m)^\s*set\(CMAKE_INTERPROCEDURAL_OPTIMIZATION_.*$"#).unwrap()
+            .replace_all(&c, "#$0");
         c.into_owned()
     };
     if cmakelists_patched != cmakelists {
@@ -40,10 +38,11 @@ fn main() {
     cmake_cfg.define("HEADLESS_ONLY", "ON");
     let cmake_dst = cmake_cfg.build_target("libmisc").build();
     cmake_cfg.build_target("libc4script").build();
+    cmake_cfg.build_target("blake2").build();
     println!("cargo:rerun-if-changed=openclonk"); // note: will not apply to code changes inside
 
     // Build glue code from mape manually.
-    let mut cfg = gcc::Config::new();
+    let mut cfg = cc::Build::new();
     cfg.cpp(true);
     cfg.include("openclonk/src")
        .include("openclonk/include")
@@ -71,8 +70,10 @@ fn main() {
     cfg.compile("libcpphandles.a");
 
     println!("cargo:rustc-link-search=native={}/build", cmake_dst.display());
+    println!("cargo:rustc-link-search=native={}/build/thirdparty/blake2", cmake_dst.display());
     println!("cargo:rustc-link-lib=static=libc4script");
     println!("cargo:rustc-link-lib=static=libmisc");
+    println!("cargo:rustc-link-lib=static=blake2");
     println!("cargo:rustc-link-lib=z");
 
     if env::var("TARGET").unwrap().contains("windows") {

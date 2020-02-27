@@ -1,15 +1,17 @@
-use ffi::*;
-use errors::*;
-use group::Group;
-use mattex::{MaterialMap, TextureMap};
-use scenpar::Scenpar;
-use super::Handle;
+use crate::ffi::*;
+use crate::errors::*;
+use crate::group::Group;
+use crate::mattex::{MaterialMap, TextureMap};
+use crate::scenpar::Scenpar;
+use crate::Handle;
 
 use std::ffi::{CStr, CString};
 use std::slice;
 use std::cell::RefCell;
 use std::ptr;
+
 use image::{self, ImageBuffer, RgbImage};
+use error_chain::bail;
 
 pub struct MapGen {
 }
@@ -201,7 +203,7 @@ impl<'a> MapGenHandle<'a> {
     }
 
     fn get_mat_color(&self, mat_idx: u8) -> image::Rgb<u8> {
-        const SKY: image::Rgb<u8> = image::Rgb { data: [100, 100, 255] };
+        const SKY: image::Rgb<u8> = image::Rgb([100, 100, 255]);
         if mat_idx == 0 {
             SKY
         } else {
@@ -220,9 +222,9 @@ impl<'a> MapGenHandle<'a> {
                     }
                 } else { texture_name.to_owned() };
                 let color = self.texture_map.get_average_texture_color(&texture_name);
-                image::Rgb { data: [((color >> 16) & 0xff) as u8,
-                                    ((color >> 8) & 0xff) as u8,
-                                    (color & 0xff) as u8] }
+                image::Rgb([((color >> 16) & 0xff) as u8,
+                             ((color >> 8) & 0xff) as u8,
+                             (color & 0xff) as u8])
             } else {
                 // This really shouldn't happen and I think mape doesn't even handle this case.
                 SKY

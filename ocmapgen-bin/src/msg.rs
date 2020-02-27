@@ -1,6 +1,7 @@
 use serde_cbor as cbor;
 use serde::de::Deserialize;
 use serde::bytes::ByteBuf;
+use serde_derive::{Serialize, Deserialize};
 
 use std::io::{self, Write};
 

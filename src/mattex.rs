@@ -1,11 +1,12 @@
-use ffi::*;
-use errors::*;
-use super::Handle;
-use group::Group;
+use crate::ffi::*;
+use crate::errors::*;
+use crate::Handle;
+use crate::group::Group;
 use std::ffi::{CStr, CString};
 use std::collections::HashMap;
 
 use image::{self, DynamicImage};
+use error_chain::bail;
 
 pub struct MaterialMap {
     handle: *mut C4MaterialMapHandle,
@@ -209,10 +210,10 @@ impl Handle<C4TextureMapHandle> for TextureMap {
 fn get_average_color<T>(image: &T) -> u32 
         where T: image::GenericImage<Pixel = image::Rgba<u8>> {
     let accum = image.pixels().fold((0f64, 0f64, 0f64, 0f64),
-                                    |acc, (_x, _y, px)| (acc.0 + px.data[0] as f64,
-                                                         acc.1 + px.data[1] as f64,
-                                                         acc.2 + px.data[2] as f64,
-                                                         acc.3 + px.data[3] as f64));
+                                    |acc, (_x, _y, px)| (acc.0 + px.0[0] as f64,
+                                                         acc.1 + px.0[1] as f64,
+                                                         acc.2 + px.0[2] as f64,
+                                                         acc.3 + px.0[3] as f64));
     let size: f64 = (image.width() * image.height()) as f64;
     // OC color format is 0xaarrggbb
        ((accum.2 / size + 0.5) as u32)

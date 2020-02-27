@@ -1,8 +1,3 @@
-extern crate image;
-#[macro_use]
-extern crate error_chain;
-extern crate regex;
-
 mod ffi;
 mod group;
 mod mattex;
@@ -23,6 +18,8 @@ pub use mapgen::{MapGen, MapGenHandle};
 pub use misc::*;
 
 mod errors {
+    use error_chain::error_chain;
+
     error_chain! {
         foreign_links {
             Io(::std::io::Error);

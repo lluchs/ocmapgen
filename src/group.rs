@@ -1,10 +1,12 @@
-use ffi::*;
-use errors::*;
-use super::Handle;
+use crate::ffi::*;
+use crate::errors::*;
+use crate::Handle;
 
 use std::os::raw::{c_void, c_char};
 use std::ffi::{CStr, CString};
 use std::ptr;
+
+use error_chain::bail;
 
 pub struct Group {
     handle: *mut C4GroupHandle,
