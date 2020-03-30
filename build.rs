@@ -51,6 +51,7 @@ fn main() {
        .include("openclonk/thirdparty")
        .include(format!("{}/build", cmake_dst.display()));
     cfg.define("HAVE_CONFIG_H", Some("1"));
+    cfg.define("USE_CONSOLE", Some("1")); // avoid glew dependency
     if env::var("PROFILE").unwrap() == "debug" {
         cfg.define("_DEBUG", Some("1"));
     }
